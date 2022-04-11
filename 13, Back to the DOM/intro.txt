@@ -1,0 +1,288 @@
+Beyond queryng and inserting. 
+- Work with their coordinates and sizes
+- Attach data to them
+
+Module Content:
+- Attach data to elements
+- Element Coordinates and Sizes 9Use JS to find out where an element sits and its size)
+- Templates and Dynamic Scripts (Load and create scripts with JS)
+- Navigator, location and window.history
+
+For our tooltip data, we could be managing data like that in JS with an array of projects. 
+However, we get our data from html, which is precreated on a server and sent to us. Therefore, 
+we don't have that available in JS. Also not available in the normal HTML tag, because it is not normally
+visible, not rendered on the screen. 
+Instead we can use "data-extra-info" attribute on the items which the data belong to. 
+This "data-" attribute in general is a special attribute you can add to your own elements to attach
+any kind of info to them. 
+"data-id", "data-whatever"
+
+Why? Simply you don't have to manage it in JS. 
+We can read from this custom property we can use elem.dataset, the "dataset" property.  
+.dataset maps the name added after "data-" attribute, in camel case to the string value of that 
+attr. 
+We can also set data on JS, 
+    elem.dataset.propertyNameGoesHere = WhateverYouWantToSet;
+
+-------------------------------------------------------------------------------------
+
+Dimensions
+We might need to work with element coordinates, sizes. When using developer tools on the browser, 
+we can click on an element, and it shows == $0 next to that element. That means that clicked element
+can be references on the console with "$0" without query selecting it. 
+
+$0.getBoundingClientRect()
+returns an object that gives info about the box surrounding an element. Gives some coordinates and 
+sizes. 
+The browser renders elements in a 2d way. So you get a x and y. The origin is at the TOP-LEFT. 
+The x axis goes from LEFT to RIGHT. The y axis goes from TOP TO BOTTOM. 
+The page is rendered from top to bottom, and that is consistent to how a webpage is rendered from
+top to bottom. 
+
+Here the units are in pixels. 
+
+For positive x, y - we have it equal to "top" and "left". "bottom" and "right" is "height" and "width" 
+away from top and left. 
+
+- More specialized data
+ $0.offsetTop
+
+ Gives top coordinate with respect to the document start, NOT relative to the viewport. (ie, it does
+ not change uponscrolling)
+ $0.offsetLeft, $0offsetRight etc. 
+
+$0.clientTop, $0.clientLeft
+offset gives you the outer positioning. The client gives you the inner positioning. 
+Ie, $0.clientTop and $0.clientLeft give you HOW FAR your content is FROM  your "left" and "top" point. 
+So its inner to the element. 
+By content we mean, the element, without border and scroll bars. 
+
+$0.offsetWidth, $0.offsetHeight 
+Width and height with borders and scrill bars. 
+
+$0.clientWidth, $0.clientHeight
+Width and height without borders and scroll bars. 
+
+$0.scrollHeight
+Total height including the part that has to be scrolled down to. 
+
+$0.scrollTop ***
+Gives how much you have scrolled the content!
+
+
+window.innerWidth, window.innerHeight
+width and height without url bar, dev tools. 
+Problem with this is, if you have a visible scroll bar, this will include the scroll bar - therefore 
+give you more width and height than you actually have availabel for yor content. 
+
+document.documentElement.clientWidth, document.documentElement.clientHeight
+Will deduct the visible scroll bar from the width and height. 
+
+These position value attributes are READ ONLY. You cannot assign to $0.offsetTop
+To assign positions, we use CSS. 
+
+$0.style.left = "50px", UNIT is mandatory
+
+
+
+-----
+Controlling scrolling in JS
+- You can limit height in CSS. That way you can ensure scrolling. 
+
+section ul {
+    max-height: 20rem;
+    overflow: scroll; 
+}
+
+---
+$0.scrollTo(0, 50)
+Coordinate to scroll to. x, y. 
+
+$0.scrollBy(0, 50)
+Scroll by in x axis relative to the scroll we are already in. 
+
+Because we can get the coordinates of any element on the screen, you can scroll to any element
+by getting the cooridnates of that element and scroll to that element. 
+
+There is an easier way of scrolling to an item. 
+$0.scrollIntoView();
+
+To include animation while scrolling by setting the behavior to smooth passin in an object. 
+$0.scrollIntoView({behavior: "smooth"});
+
+Same config object is available for scrollTo and scrollBy. 
+$0.scrollTo({top: 50, behavior: "smooth"})
+
+
+--------------------------------------------------------------------------
+Generating HTML in JS. 
+
+We can add more HTML in our JS using the likes of innerHTML attr. 
+Instead of doing this on JS, we can use a speacial tag in HTML. <template></template>
+It's content by default is NOT rendered, but it's part of the DOM. You can query it and use it, 
+
+Separates HTMl code and Js code. \
+
+
+--------------------------------------------------------------
+You can create and run another script in JS. 
+HTMl has <script></script> tags. So we can create element. 
+
+const someScript = document.createElement("script");
+someScript.textContent = "alert('hi there')";
+document.head.append(someScript);
+
+This is useful when you have other script file, that you only want to download at a certain point in time. 
+You want to control when JS loads that script. You mihgt not want to download it using <script> immediately, 
+or not at the end, using "defer". 
+
+Careful when dynamically loading user written scripts. That creates security issues, later discussed. \
+
+
+---------------------------------------------------------------------------
+Timer
+
+One time execution:
+
+window.setTimeout() or just
+const timerid = setTimeout(() => {}, 5000, [arg1, arg2]);
+
+runs the provided callback after 5000ms. 
+returns a timerId to use to turn off timer. 
+
+This is an example for some asynchronous code execution in JS. 
+*** This timeout will NOT pause your entire script execution. You can click buttons and have your script executed as expected. 
+
+Instead this is registered by the browser somewhere in the background. The browser manages the timer and 
+and also just registers that this function should be called when the timer expired. 
+Once the browser sees that the timer expired, it will come back to your script and execute that
+function for you. 
+
+* Important: this will NOT pause script execution, instead the browser will manage all that for you
+in such a way that your script can continue to run. 
+
+Interval execution:
+
+setInterval(() => {
+    console.log("sending analytics data);
+}, 5000, [arg1, arg2]);
+
+Execute every 5000ms. 
+
+Stop timer:
+clearTimeout(timerid);
+clearInterval(timerid);
+
+----------------------------------------------------------------------------
+Location
+
+window.location or, 
+location
+
+Property related to the url and the page we are on. Location can also be used to navigate the
+user away. 
+
+location.href = "https://academind.com";
+location.assign("https:/academind.com");
+
+Another navigation away, 
+
+location.replace("https://academind.com");
+This one, replaces the page, therefore you can't go back to the previous page. 
+
+
+Domain
+location.host
+
+Including protocol
+location.origin
+
+Pathname (after the domain)
+location.pathname
+
+
+For more complex JS driven webapps you might want to render different content based on the path
+that was entered in the web bar. You might want to control the entire navigation using that 
+pathname, something that is possible - typically done with JS frameworks. 
+
+--------------------------------------
+HISTORY
+
+window.history or
+history
+
+Move back
+history.back()
+
+Move forward
+history.forward()
+
+How many steps on this tab
+history.length
+
+Go back multiple steps
+history.go(5)
+
+
+-------------------------------------------------------------
+Navigator
+
+Info about browser and OS, machine. 
+
+navigator
+
+navigator.userAgent
+Browser devs use this so that all scripts can run on their browser. So they put all web vendor info in there
+Tells the website what this browser is and what it supports. So all browser devs just put 
+everything here to fake it even if your browser does not support some script. 
+
+If you really need to know which browser the user is using, you should check whether some features 
+are available. By checking features you can narrow down which browser users are using in a better way. 
+
+There are ways to write scripts that work in a broad variety of browsers, or has a fall back, 
+later covered. 
+
+navigator.clipboard
+Add or paste something into an input field
+
+navigator.geolocation
+
+navigator.getCurrentPosition((data) => {console.log(data)});
+Pass in a callback that does things with that location data. 
+Will ask for location permission and get coordinates. 
+
+-----------------------------------------------------------------
+Dates
+
+const date = new Date()
+current date and timestamp. 
+
+date.getDate()
+Day of the month. 
+
+date.getDay()
+Day of the week. 
+
+date.getTime()
+ms passed from jan 1 1970. 
+
+const date2  = new Date("parsable date")
+const date3  = new Date(date2); copy
+
+Difference in ms
+
+date1 - date2
+
+Converting back to necessary units:
+
+ms / 1000 / 60 / 60 / 24 days
+
+
+----------------------------------------------------------------------
+Error
+
+throw new Error("message");
+
+Gets a stack trace as well. 
+
+

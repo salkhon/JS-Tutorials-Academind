@@ -1,0 +1,17 @@
+in js, == and != are for value equaloty or inequality.
+So 2 == '2', becuase they have the same value.
+
+Whilst for value and type equality, === !==
+In JS you should prefer the === triple equality signs. 
+Makes your intentions clear.
+
+Comparing arrays and objects are not like other types.
+{name: 'Sal'}, {name: 'Sal'}
+These are differently instantiated, but of the same content.
+=== or == both with yield false.
+ 
+For objects (arrays are objects) they are compared as reference types, like Java.
+
+All objects and arrays have truthy vals. null undefined NaN have falsy values.
+
+

@@ -1,0 +1,588 @@
+JS is single threaded
+    Can execute one task at a time. Code executes step by step, in order. 
+    (A) console.log() ---> (B) someFunction() ---> (C) button.disabled = true ---> (D) moreCode()
+    Runs "synchronously"
+    Code segment at B only runs after A, but BLOCKS C from running until it's finished. 
+
+    When we write synchronous code, we rely on the sequence. That previous code has been executed. 
+
+    But this synchronous code has a downside. We might have certain operations that
+    EXPECTEDLY take a bit longer?
+
+    console.log() ---> setTimeout() ---> moreCode()
+
+    SYNCHRONOUS setTimeout blocks our code execution. So it prevents more code from being executed. 
+    Other examples, http requests whose response you're waiting for. Or you might be getting the user
+    location. We have ceratin operations that can't be finished immediately. It's not just timers
+    where we as a developer decide how long to wait, but also other operations which simply take
+    a bit longer. And TYPICALLY you don't want to block your entire script until these operations
+    finish. Because blocking your script does not just mean that the next line is not executed, 
+    it would also mean that no other code can execute. 
+
+    ** For example, if you have an event listener to lsten for a button click, then this handler function
+    will not run until your timer expires, or your http request is done. So you would be blocking
+    your entire page with these longer taking operations. That's not what you want. 
+
+    JS and browsers have a solution for that. If we have have certain operations that take longer 
+    then, we can actually offload them to the browser. 
+
+    console.log() ---> moreCode()
+    Offloaded to browser: setTimeout() 
+
+    So our code can executed right away. The browser then is able to use multiple threads, one for
+    JS and one for another task. Our JS is not blocked, and the browser is reponsible for managing
+    the timer. 
+
+    The browser then needs a way to communicate back to our JS code. Typically for that we use callback
+    functions. We pass in a callback function to the offloaded process, and that callback is called
+    once the operation is done. The browser can step back into our script and execute once it's done. 
+
+    For example, for listeners - if we had to constanly listen for button clicks, then that would
+    block our code. Instead, 
+    button.addEventListener("click", trackUserHandler)
+    is passed to the browser which manages the event listeners behind the scenes. So our script 
+    can continue executing. 
+
+        
+    function trackUserHandler() {
+    console.log('Clicked!');
+    }
+
+    button.addEventListener('click', trackUserHandler);
+
+    Once we call the button.addEventLister() we tell the browser to set up such a behind the 
+    scenes event listener, and we're done with it. We're just telling the browser which function
+    to execute once this click occurs and that is it. 
+    Everything you execute in code right away, runs right away. And it blocks other script execution
+    until it's done. It's the browser, which can help you with tasks that take longer and should not
+    block your main thread.  
+
+    NB: JS script code finshes running before page is fully loaded. 
+    Event listeners RUN synchronously. When one handler is running, no click UI responds, 
+    no other handlers run. BUT THE EVENT IS RECORDED, and RUN SEQUENTIALLY. So the listening is 
+    done by the browser asynchronously.  
+    
+
+Blocking Code:
+    let result = 0;
+
+    for (let i = 0; i < 100000000; i++) {
+        result += i;
+    }
+
+    console.log(result);
+
+
+    The page shows it's loading as long as the script is running. We can hammer the click button
+    but the event listener print won't show. It won't run. Until the loop is complete. Then they will
+    run the number of times the button was clicked. 
+    This is single thread in action. 
+
+    We .addEventListener() and handed the handler off to the browser. THEREFORE THIS EVENT LISTENER
+    IS NOT BLOCKING JS. But the loop is not handed off to the browser.
+
+    IMPORTANT: The listening is offloaded to the browser, BUT THE EXECUTION OF THE HANDLER BLOCKS!!
+
+    ** If we click while the loop is running, the browser recognizes that click.   
+    But the callback it's supposed to run, is a JS function, writter by the programmer. Which has to 
+    wait for the single threaded JS runtime.
+
+    This uses a concept called the event loop. 
+
+
+EVENT LOOP:  
+    Enables asynchronous code. 
+
+    The stack executes JS engine script. Certain other things are offloaded to the browser. The browser
+    gives us a bridge where can talk to certain browser APIs from our JS code to for example offload 
+    certain work. 
+
+    function greet() {
+        cosole.log("Hi");
+    } 
+
+    function showAlert() {
+        alert("Danger!");
+    }
+
+    setTimeout(showAlert, 2000);
+
+    greet();
+
+
+    setTimeout() reaches out to the browser, and sets up the ongoing timer in the browser. The browser
+    manages the timer.
+
+    The next thing that happens, it the JS engien moves on after telling the browser to handle the timer. 
+    It moves on to the greet() method. In greet() 's stack console.log() executes. 
+
+    At some point, the timer is complete. Let's say that happens while our greet() console.log() executes. 
+    Now we need some way to tell out JS engine that the showAlert() function should be executed.
+
+    FOR THIS A MESSAGE QUEUE is USED. This is provided by the browser and it's also linked to the 
+    JS engine. In this message queue the browser registers any coed that should execute once we have
+    time for it. This case: the timer. So here the showAlert() callback registers as a "todo" task
+    once the JS engine has time for it. 
+    NB: showAlert() does not execute at this point. It's just registered. The only thing that is executed
+    at this point is greet() and console.log(). 
+
+    After we're done with greet() and console.log() the call stack is empty again. Now we need to get that 
+    message in our call stack. For this we use the event loop. 
+
+    * The event loop, just like the message queue is built in the browser. Most JS environments (for example NodeJS)  
+    has such an event loop. It's part of the the host of the JS engine. The browser. 
+
+    The job of the event loop is to synchronize the call stack in the engine with our waiting
+    messages. The event loop runs all the time, and always checks if the call stack is empty and 
+    do we have pending todo s. If the stack is empty the event loop executes, and pushes any 
+    waiting functions into the callstack.  
+
+    So when we call button.addEventListener() we tell the browser, this callback needs to be executed
+    once the button is clicked. But then we have a long task. It executes, and our callstack is not
+    empty. So if we click the button, the the click is registered and the browser pushes the callback
+    into the message queue. But the event loop sees we still have work to do, therefore it waits
+    until the callstack empties. This is how the browser does it. 
+
+    My understanding so far: The browser runs the event loop. It hosts (and runs) the JS engine (runtime). 
+    The browser yields the JS engine occasionally to execute it's listening and other processes. 
+    So the JS engine and the browser tasks are rotated in the queue and it is manages by the browser. 
+    JS runtime has browser methods that tells the browsers to push certain tasks into the event loop
+    after some trigger the browser recognizes through it's event loop. HOWEVER, the browser recognizes 
+    that in it's event loop, but enqueues the callback as a part if the JS ENGINE. So the next
+    time the browser yields it's tasks, and finishes the other JS engine tasks, it runs the callback
+    as the JS engine's execution. So the initial script is completed and only then the initial
+    call stack is empty, and gets a chance to see further on the event queue. 
+    So if async is not used explicitly on the main initial loading script, that will execute in full before any 
+    tasks offloaded to the browser (async event loop) runs. Even if 0 delat time out is used. 
+    Using async explicitly may offer way to incorporate async code in inital script code. 
+
+function trackUserHandler() {
+	navigator.geolocation.getCurrentPosition(
+		(posData) => {
+			console.log(posData);
+		},
+		(error) => {
+			console.log(error);
+		}
+	);
+    console.log("offloading done");
+} 
+
+navigator.geolocation.getCurrentPosition() also offloads the IO task to the browser. When it's done
+it pushes it into the event loop to execute our code there. 
+It pushes it into the message queue where the event loop eventually "moves it" into the JS call stack. 
+
+So "offloading done" will run before either call backs. Because that is part of the call stack that
+still is there, until it's done. 
+
+So async nesting is okay. 
+
+SET TIMEOUT time is the MINIMUM time when the passed in task will run. Because after that it needs to 
+wait for call stack to be emptied synchronously. 
+
+
+READABILITY:
+    Nesting async code can be cumbersome to read. Callback within a callback. This is dubbed as 
+    "Callback Hell". 
+
+PROMISES:
+    To solve callback hell, JS has promises. They allow us to write cleaner code. 
+
+    someAsyncTask()
+        .then(() => {
+            return anotherTask();
+        })
+        .then(() => {
+            return yetAnotherTask();
+        })
+        .then(...);
+    
+    If some async task depends on another task, then instead of nesting them we can use THEN. 
+    Therefore we have only one level of nesting instead of multiple levels. 
+
+    Unfotunately setTimeout() and getCurrentPosition() have not promise version. So we can't add THEN
+    and try to use that promise approach. More modern webAPIS offered byu the browser typically 
+    embrace promises. But these older functionalilties like setTimeout() which have been around for 
+    a long time, these use callbacks. But we can wrap them in promise supported code. 
+
+    So, a promise is an object with the functionality of having ".then()" method on it.  
+
+    const promise = new Promise((resolve, reject) => {
+        // THIS IS EXECUTES RIGHTAWAY. CALLED FROM THE COSNTRUCTOR. 
+    });
+
+    This promise constructor takes in two args. These two args themselves are functions. (callbacks.)
+
+    resolve: Built into the browser. The browser passes into the resolve and reject functions into 
+    the promise constructor executor. So the reolved function is coming from the JSEngine. 
+    This function interanally will MARK the promise object as RESOLVED (done).
+    Can also pass in args to resolve. 
+
+    So the "then()" method executes on a promise whenever it is resolved. A promise can be resolved
+    multiple times.
+
+    "then()" receives any data that has been resolved (passed into the call to resolve on the promise
+    constructor executor).
+
+    reject:
+
+
+    PROMISIFYING a built in API:
+
+    function setTimer(duration) {
+        const promise = new Promise((resolve, reject) => {
+            setTimeout(() => {
+                resolve("Done!");
+            }, duration);
+        });
+        return promise; // can call "then()" on setTimer()
+    }
+
+    function trackUserHandler() {
+        console.log("Clicked!");
+        navigator.geolocation.getCurrentPosition(
+            (posData) => {
+                // 2000 for the wrapped set timeout.
+                setTimer(2000).then(data => {
+                    console.log(data, posData);
+                });
+            },
+            (error) => {
+                console.log(error);
+            }
+        );
+        setTimeout(() => {
+            console.log("runs later after call stack empties");
+        }, 0);
+        console.log("Offloading done.");
+    }
+
+    button.addEventListener("click", trackUserHandler);
+
+    WRAPPING, setTimeout() in promise, and returning that promise wrapper. So that we can call that
+    wrpaaer method instead of the old async setTimeout() and use .then()
+
+    ** Instead of having later callbacks queued for in a nested manner, we use then to virtually nest
+    the callbacks on .then() after in the place resolve() is called. 
+
+My understanding: So instead on enqueueing async tasks one after another in a nested manner
+we have a common method to call so that one callback is linked to the other ( resolved() ), 
+in that after finishing one it looks for the THEN link of the next one, and enqueues it in the 
+event queue. AND it has to be that .THEN() is linked before such look up occurs, which is guaranteed
+by JS heuristic of emptying call stack before moving to the next task. 
+
+Here a, b, c enqueues on the event queue. 
+
+let data, data1;
+a(() => {
+    ...
+    b(() => {
+        ...
+        c(() => {
+            ...
+        })
+    })
+})
+
+TO
+
+new Promise((resolved, reject) => {
+    a(() => {
+        ...
+        resolved(data);
+    })
+}).then((data) => {
+    b(() => {
+        ...
+        resolved(data1);
+    })
+}).then((data1) => {
+    c(() => {
+        ...
+    })
+})
+
+Notice, .then()'s callback does the enqueueing on the event queue. 
+
+So, promise is a promise that when the callback executes, (when the promise is met) the then() callback
+is executed (which then enqueues the necessary callback). 
+
+If you pass back a Promise() from .then(), the next then callback will wait till that promise resolves. 
+If you pass a non promise from a then(), the next then callback executes immediately. 
+
+This allows to avoid callback hell. 
+
+Important: You don't have to return a promise from .then(), you can return ANY type of data, and 
+it will be wrapped into a Promise. The core idea of promise chaining it, you have step after step. 
+Each promise step executes after the previous is done.  
+
+THIS IS DONE first
+getPosition(
+        .then(posData => {
+            return setTimer(2000); // second
+        })
+        .then(data => {
+            console.log("a"); // then this is done, if not interacting with event queue, executes synchronously. 
+        })
+)
+
+
+Error in Promise:
+    Event queue methods in JS generally have an error callback. On the event of such an error, we wish
+    our promisified logic to handle further actions. That is done with REJECT argument of promise. 
+
+    function getPosition(options) {
+	    const promise = new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(
+                (success) => {
+                    resolve(success); // rather than enqueuuing further events here, we resolve() and let .then() run it's callback to do the same. 
+                },
+                (error) => {
+                    reject(error);
+                },
+                options
+            );
+	    });
+	    return promise;
+    }
+
+    reject() will mark the promise as FAILED. 
+
+    A promise can be pending or resolved. 
+    ** Pending: While waiting to be resolved. Once it's resolved we can set it back to pending by returing 
+    something in the .then() block. 
+
+    Another state is FAILED. A promise is not resolved, not pending, but it has an error. 
+
+    ERRORS ARE NOT HANDLED WITH THE NORMAL .then()
+
+    Instead .then() takes a second argument. The first arg is the callback function that should be executed, 
+    if the promise resolves, the second argument is the potential error function. 
+
+    getPosition()
+        .then(posData => {
+            return setTimer(2000);
+        }, err => {
+            // executes when a promise rejects
+            console.log(err);
+        });
+
+    BUT ONCE THIS ERROR CALLBACK EXECUTES, IT MOVES TO THE NEXT .then() !!!
+
+    However, passing two callbacks per .then() seems to bring back some callback hell. To make this
+    more readable we can use .catch().
+
+    .catch() can be added to a promise, and it can be added anywhere in the chain. 
+
+    So instead of passing a nameless 2nd error callback, we can just append a,
+    .catch((err) => {
+        console.log(err);
+    })
+
+    So this would look, 
+
+    getPosition()
+        .then(posData => {
+            return setTimer(2000);
+        })
+        .catch(error => {
+            console.log(error);
+        })
+
+    * catch() catches ANY ERROR, ANY REJECTIONS produced ANYEWHERE PRIOR to the catch block, or as a
+    2nd arg. 
+    So if we had
+    .then()
+    .then()
+    .then()
+    .catch()
+    
+    this .catch() would catch the errors of it's previous 3 promises. 
+    (NB: .then() and .catch() seem to form a pair. The last .then(), .catch() deals with the leading
+    promise and it's latter 2 .then())
+
+    ** So it any of the prior promises reject, ALL THE PROMISES BETWEEN THE NEXT .catch() ARE SKIPPED!!!
+    (or a 2nd arg). 
+
+
+    ** BUT THE LATTER .then() runs. So you can return some new tasked promise from the .catch() for
+    the latter .then() to progress.
+
+    getPosition()
+        .then(posData => {
+            return setTimer(2000);
+        })
+        .catch(error => {
+            console.log(error);
+            return "on we go";
+        })
+        .then(data => {
+            ...
+        })
+        .then(...) ...
+
+    NB: SO THE POSITION OF THE .catch() block MATTERS!
+    If you want to cancel the promise chain, you have to move it to the end of all the .then() blocks. 
+    Only then can you ensure that if one of them rejects, you make it into the .catch() 
+    If you add .catch() some where in the middle then all prior ones are skipped if one of them rejects. 
+    Bu the then blocks after, will be executed. Even if you don't return anything from .catch() you
+    return undefined basically, that sets the Promise back to pending. And further .then() will execute
+    when the pending promise resolves again. 
+
+    So it does not cancel the promise, but allows it go on.  
+
+
+So promises are the foundation of modern asynchronous JS and we will see them a lot.
+
+    getPosition()
+		.then((posData) => {
+			positionData = posData; // saving for later resolve()
+			return setTimer(2000); // THIS DOES NOT HAVE TO BE A PROMISE. IT's automatically 
+			// wrapped into a promise
+		})
+		.catch(error => {
+			console.log(error);
+			return "I will continue without location";
+		})
+		.then(data => {
+			console.log(data, positionData);
+		});
+
+	setTimeout(() => {
+		console.log("runs later after call stack empties");
+	}, 0);
+	console.log("Offloading done.");
+
+This promise syntax makes clear, the getPosition(), setTimeout(), console.log(), in the same line indent
+work mext to next. So that we don't wait for .then(), .catch() steps to finish. 
+
+Modern JS also has an alternative syntax to this. Which still uses Promises, but omits .then() and
+.catch(), that makes your code look like synchronous code. That's async / await. 
+
+
+ASYNC / AWAIT:
+    Can be used only in functions. You enable it by adding the async keyword infront of your function. 
+
+    ** With async infront of it, the function, automatically changes. It automatically returns a Promise. !!!
+    Without calling return.
+
+    ** With async, JS wraps the body of the entire function in Promise(), so the body of the 
+    async functoin serves as the executor to a promise, that will be returned. 
+
+    So, you can call .then() when that async function is called. 
+
+    Because we added async to our function, we have access to another key word inside the function. 
+    That is the await key word. We add that infront of any Promise. 
+
+    What does await do infront of a Promise?
+    ** It waits for the promise to resolve(), or to reject() and the next line after, will only execute 
+    when that is the case. The data which might be resovled, for examples the posData for await getPosition()
+    will then be returned. 
+
+    const posData = await getPosition();
+    // We can then omit the following .then(posdata => {})
+    const timerData = await setTimer(2000)
+    console.log(timerData, posData);
+
+    We can execute the next process in the next line. 
+
+    So after, 
+    await getPosition() is resolved, setTimer(200) executes, mimicing the nesting behavior. 
+
+    But does this break async code?
+    It looks like it does due to it's synchronous appearance of simple function calls, but IT DOES NOT!
+    It's just a cleaner async code. 
+
+    It looks like we wait for async code to finish, and we block script execution until that finishes. 
+
+    But that's not what's happening. 
+
+    Because async, wraps everything in one big Promise. And then when we await some other promise
+    which is wrapped in the big Promise to resolve, it returns this as part of that big Promise
+    and adds an invisible .then() block, in then block it will get the result of this promise and
+    store it in a variable. Which is available in the big overall promise.
+
+    My observation: So this achieves the same "keyword" linking between async code, that was 
+    achieved by nesting in old JS, but now is done using resolve(), reject().Async await just
+    replaces .then(), .catch() for each promise, by implicitly making the body of the function
+    a Promise executor!!! Same as .then() and new Promise(executor);
+
+    So this needs a parent helper to make the chaining using await on nested async code. 
+
+    Error handling:
+    await always moves to the next line. 
+    We can use try catch. 
+
+    
+    async function trackUserHandler() {
+        console.log("Clicked!");
+
+        let posData, timerData;
+
+        try {
+            posData = await getPosition();
+            timerData = await setTimer(2000);
+        } catch (error) {
+            console.log(error);
+        }
+        console.log(timerData, posData);
+    }
+
+Async await vs Raw Promises:
+    Async await has a risk of misinterpretation by novices. However, async await always offloads 
+    for async code to the browser. 
+
+    Downside of async await: You can't run tasks simulteneously inside the same function.
+    Previously when Promises were called, the executor offloaded tasks to the browser for enqueueing
+    in the event queue. Then moved on with the synchronous tasks below the Promise call. Leaving
+    the .then() blocks to enqueue after the first Promise resolves. Because the code below await
+    is as if it was inside another .then() block, so it does it's supposed to. 
+
+    Here await does not move until the async (read Promise) resolves. Adn after then awaits the 
+    next async function (read Promise). So to achieve async execution, the async codes need to be
+    inside another function, that would be called without await.  
+
+    Another downside: aync await can't execute on the global scope, has to be inside async function.
+
+
+Methods related to Promises:
+    If you have multiple promises, and you want them to be executed in an orchestrated way. 
+    Previously we were executing on a chained nested manner. 
+
+    Say we have, 
+    getPosition();
+    setTimer();
+    and we want to execute the fastest one only. In this example it can be done setting a timeout for
+    the getCurrentPosition(). 
+
+    Promise.race(array of promises CALLED) -> returns a Promise, thus can be .then()
+
+    Promise.race([
+        getPosition(), setTimer(1000)
+    ]).then(fastestResult => {});
+
+    Both kicks off from the same time. The first one to resolve or reject goes to .then()
+
+
+    Sometimes you have code that only has to execute after a couple of promises have finished. 
+    You can achieve that by chaining multiple ,then() blocks or by async await. But an alternative
+    is you use Promise.all(array of promises called) -> returns the cobined data of the promises. 
+
+    Promise.all([getPosition(), setTimer(2000)]).then(promiseData => {
+        console.log(promiseData);
+    })
+
+    promiseData: [GeolocationPosition, 'Done!']
+
+    This can be useful if you want to wait for all promises to finish and then you want to use the
+    combined data. 
+    Important: If location was blocked, (one of the promises rejects), then the other promise 
+    IS NOT EXECUTED. So we are waiting for all resolve. 
+
+    Promise.allSettled([getPosition(), setTimer(1000)]).then(promiseData => {
+        console.log(promiseData);
+    });
+
+    This does not fail on rejection. The rejected one stays on the promise data, with the rejection of
+    the one that was rejected. Gives you the data on which promises resolved, and which cancelled. 
+    

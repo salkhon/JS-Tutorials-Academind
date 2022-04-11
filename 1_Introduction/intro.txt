@@ -1,0 +1,164 @@
+What is javascript?
+- Javascript is a dynamic, weakly typed programming language which is compiled at runtime. 
+	It can be executed as part of a webpage in a browser or directly on any machine 
+	("host environment")
+- Javascript was created to make webpages more dynamic (e.g change content on a page directly from 	inside the browser.) Originally, it was called LiveScript but due to the popularity of Java, it 	was renamed to JavaScript, to resemble Java by its name. 
+- JavaScript is totally independent from Java and has nothing in common with Java!
+
+
+How do webpages work?
+Server is a computer on the internet where the html file is hosted. 
+ User --- (visit & interact) ---> Client (browser) --- (Request) ---> Server __	|
+										|
+					^---(Load and send back response (html))-
+
+When the user clicks a button to submit a form, to order some products, this will then trigger a new request which is then sent by the browser to the server to send the form submission to the server, and then the server will handle the request and may be store some data in a database, and then it will reply back with a new response, with a new webpage or html doc to the client. 
+
+JavaScript helps us make this more "reactive". Skips that second request-response flow in some cases, and change the already loaded page and do something there. 
+
+By adding a js file to a script tag to the html and changing the anchor tags requesting new page for the links dynamic and weak typing to an overlay showing the the same text, a modal. A new content which is dynamically added to the webpage, using JavaScipt. 
+Now we don't send the user to a different page, we don't wait for the html code to be downloaded. We change the existing page. Better USER EXPERIENCE.
+This is seen in modern webpages, because it's faster and more mobile like. This is one of the core reasons why JavaScript is so important - it allows us to make webpages dynamic.
+
+JS:	- Dynamic, weakly typed programming language.
+	- Interpreted, "on the fly" compiled language. Not compiled during development. 
+	- "Hosted Language": Runs in different environments (e.g. in browser)
+	- Most prominent use-case: Run code in a browser (on a webpage) 
+
+How is JavaScipt Executed? In any environment?
+		<Your Code> --------------------------------> Effect on webpage
+Then you have one important thing built into any environment that runs JavaScipt code. That's a 
+JavaScript Engine. 
+Built into the browser. V8 (Chrome), SpiderMonkey (FireFox), etc.
+
+Job of the JavaScript Engine: - parse code.
+				- compile to machine code
+				- execute machine code. (on a single thread)
+------> Effect on webpage.
+
+Important modern engines have alot of optimizations, they might starting executing your uncompiled code, then compile whilst they are being executed. To get started executing faster and then switch to the compiled code dynamically. 
+
+All of it happens on a single thread. JavaScript code execution always runs on one single thread on the OS.
+
+JavScript: Dynamic, interpreted programming language + weakly typed programing language
+
+Dynamic, interpreted programming language: 
+ - Not pre-compiled, instead parsed and compiled "on the fly" (e.g. in the browser) (Unlike 	C++, which is compiled during or after development - before shared with end users)
+- Code evaluated and executed at runtime. 
+- Code can change at runtime (e.g. type of a variable) (You can do something which you are not allowed to do in other programming languages. For example you are working with a variable, you might store some tex in there. In JavaScript you are allowed to dynamically switch type of data there. In variable you might start by storing some text, and suddenly at a later point of time you store a number in there, in the same variable. 
+The dynamic thing in JavaScript means that it is parsed, interpreted and compiled at runtime and that they are able to do somethigns, like switching the data of a variable. 
+
+Weakly typed programming language:
+- This means when we work in data with JavaScript you don't ahve to tell JS that you are working with text or number. Instead the datatype is automatically inferred. 
+
+- Data types are assumed (e.g. assigned to variables) automatically.
+- You don't define that some variable has to hold a certain value (e.g. a number)
+- Data types are not set in stone but can change. 
+
+
+JavaScript runs on a host environment.
+- Browser-side.
+	*JavaScript was invented to create more dynamic websites by executing in the 	browser!
+	*JavaScript can manipulate the HTML code. CSS, send background Http requests & much 		more.
+	*JavaScript CAN'T access the local filesystem, interact with the operating system 		etc. (Otherwise webpages would manipulate your PC)
+- Other (e.g. Server side) : On a computer, simply execute like normal code. 
+	*Google's JavaScript Engine (V8) was extracted to run JavaScript anywhere (called 		"Node.js") [Separate module]
+	* Node.js can be executed on any machine and is therefore often used to build web 	backends (server-side JavaScript)
+	* Node.js CAN access the local filesystem, because it runs on the machine, interact
+	with he operating system etc. It CAN'T manipulate HTML or CSS.
+The syntax will be the same. 
+DOM: Document object model. All about manipulating the webpage, adding content, removing content and so on. 
+
+
+JavaScript vs Java:
+Totally independent programming languages with different syntax and principles. 
+JS runs in the browser, Java does not run in the borwser. You can use Java in the server side to render html dynamically and send it back. You can also use it in a non web development context. Java is strictly obejct oriented and strongly typed. Whereas JavaScript is flexible, weakly typed.
+
+JavaScript was named JavaScript to "sound cool".
+
+
+Client-side (Browser) vs Server-side (NodeJS):
+
+Client-side (Browser):
+- The origin of JavaScript!
+- Different browser vendors provide their own JavaScript execution engines (e.g. V8)
+- Allows interaction with webpage and browser APIs (e.g. get user location)
+
+Server-side (NodeJS):
+- On a machine that is connected to the internet, which might be serving webpages but does not run code directly on the machine of the end users.
+- Why not use JavaScript outside the browser? Allows for code and knowledge re-usage!
+- Extracted V8 engine to run JavaScript anywhere. 
+- Special non-browser APIs (e.g. to work with file system, incoming Http requests etc.) 
+
+Sytax, concepts, core features etc. are exactly the same!
+
+Why browser-side first?
+- It's JavaScript's origin. 
+- No alternatives to JavaScript in the browser
+- Node.js uses the same syntax.
+- It's more fun to learn it with UI!
+
+A Bried overview of the JavaScript History:
+
+1995: Netscape introduces "LiveScript"/later renamed to "JavaScript"
+1996: Microsoft releases its own version for IE
+Back then JavaScript was not able to do a lot of things. It was mainly used for spammy things. Overlays and popups. Another problem was that you had to write very different scripts for different browsers. 
+This fragmentation could be a problem:
+Late 1996: JavaScipt submitter to ECMA (European Computer Manufacturers Association) International to start standardization. 
+1997-2005: Standardization efforts, Microsoft didn't really join and support the standardized JS version though. 
+2006-2011: Huge progress in JavaScript ecosystem. Microsoft eventually joined forces.
+
+We nowadays have a uniform language with some small differences, but mainly one core language that we can use in different browsers. Still different browsers have their own features. The core language is the same. 
+
+We have that we have ECMA organization. This organization manages a language called ECMAScript. 
+
+ECMAScript:
+- A standards organization that evolves the ECMAScript language. 
+- ECMAScript implemented as JavaScipt by Browser Vendors.  
+- ECMAScipt isn't directly used by browser vendors (Google with Chromes, Mozilla with Firefox etc) implements the standard into their JS engines).
+- Under active development! Browser vendors are contributing their as well. They are shaping how JavaScript looks like and which new features we want there.
+
+JavaScript:
+- The most famous ECMAScipt implementation (others would be "ActionScript" or "Jscript")
+So JavaScript in the end IS ECMAScript we could say, and we have an organization that evolves ECMAScript. Browser Vendors take that and implement it into browsers. So ECMAScipt itself is not directly used, but browser vendors implement it into their JavaScript engines. 
+- Each browser comes with its own JavScript engine that also defines which features are actually supported. 
+Sometimes browsers implement some features at an earlier point in time, than they are really finalized in ECMAScipt. 
+- ECMAScipt is under active development, so JavaScript is under active development.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

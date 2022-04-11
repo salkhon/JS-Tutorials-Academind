@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+		<title>Basics</title>
+		<!-- <link
+			href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap"
+			rel="stylesheet"
+		/> -->
+		<link rel="stylesheet" href="assets/styles/app.css" />
+		<!-- <script>
+			alert("This works - between script tags!");
+			// only for short scripts
+		</script> -->
+		<!-- <script src="assets/scripts/app.js">
+			// this blocks the rendering of the page until the script is done. 
+			// To make sure that the page loads first we can take the script
+			// out of the head and moving it to end of the body.
+			// so the browser has a change to first parse all html code and finish 
+			// rendering before executing script. 
+		</script> -->
+		<script src="assets/scripts/vendor.js" defer></script>
+		<script src="assets/scripts/app.js" defer></script>
+	</head>
+	<body>
+		<header>
+			<h1>The Unconventional Calculator</h1>
+		</header>
+
+		<section id="calculator">
+			<input type="number" id="input-number" />
+			<div id="calc-actions">
+				<button type="button" id="btn-add">+</button>
+				<button type="button" id="btn-subtract">-</button>
+				<button type="button" id="btn-multiply">*</button>
+				<button type="button" id="btn-divide">/</button>
+			</div>
+		</section>
+		<section id="results">
+			<h2 id="current-calculation">0</h2>
+			<h2>Result: <span id="current-result">0</span></h2>
+		</section>
+		<!-- <script src="assets/scripts/vendor.js">
+			// app.js depends on vendor.js, thus vendor needs to be imported
+			// before app.js
+		</script>
+		<script src="assets/scripts/app.js"></script> -->
+		<!-- in order to recognise the html elements in the script they
+		have to render the html code. So importing scripts have to be at the bottom.  
+		Refer to importing scripts video of Max. 
+		Adding scripts at the bottom has performance issues. The script s can't begin executing
+		until all of them are downloaded and the html is parsed. The scripts are 
+		downloaded at the ending portion of html parsing. So there is a significant delay
+		between the html parsing and script execution. This happens because the scripts
+		are coded after the html rendering. However, puttong them above will cause undefined referrence errors.
+		We can't execute the scripts before the html is parsed. But downloading them before 
+		parsing is complete should make the process faster. 
+		We want to load the scripts as early as possible and only execute them
+		after all html is parsed, to get the best of both worlds. 
+		So putting the script tags at the start will start downloading them 
+		before html is completely parsed. But 'defer' keyword will prevent executing
+		them
+		async: executes script right after downloading. Parsing html is suspended until
+		executed. This will only work if no html element is refered in the script.
+		When scripts don't interact with the webpage, maybe you send data to 
+		background server. With async, the script executes as early as possible, 
+		as soon as it is downloaded.
+		SO, the order of the script execution is not guaranteed. The app.js might be 
+		executed before vendor.js if it is loaded earlier. With 'defer' browser gaurantees order. 
+		async is solution only if you have a standalone script that does not rely
+		on your html content.
+		async and defer are only applicable only for external scripts. 
+		If inline script is used, no download is necessary. Such scripts are
+		always executed immediately. Therefore they need to put at the bottom 
+		of the body section. 
+		Inline script and imported script cannot be combined.-->
+	</body>
+</html>

@@ -1,0 +1,12 @@
+ES stands for ECMA Script. Which is the language behind JS. JS is a specific version of ECMA Script. 
+ECMA script is under active development. Browser vendors adapt to such development. 
+
+JS Evolution:
+ES5 (and older): Standardization.
+
+ES6 (and newer): Modern javascript.
+
+You can create a variable with the var keyword. let is available from ES6.
+var allows us to create variables in the function and gloabal scope.
+let does not really use function and global scope, but it uses a concept called block scope. 
+

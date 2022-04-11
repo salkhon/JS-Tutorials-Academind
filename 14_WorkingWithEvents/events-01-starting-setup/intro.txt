@@ -1,0 +1,429 @@
+There are more events other than "click". 
+
+Events are important not only on browser side JS, but also general JS, nodeJS. 
+
+Events----------------------------------------
+Any programming languages have some kind of event architechture built in. 
+The idea is: Run Code Upon Certain Events. 
+- Exact Implementation Differs:
+eg. Browser: addEventListener()
+eg. NodeJS: on(), once() - chain on some objects that allow you to listen to certain events. 
+
+- Event Typically Transports Data
+    addEventListener("...", event => ...)
+    We get this event object automatically. 
+Also on nodeJS: on("...", event => ...)
+
+
+Browser Event Objects ---------------------------------------
+Event
+
+Specialized: Mouse Event, Drag Event, ...
+Mouse event also might yield coordinates of the mouse event (special to the mouse), 
+Event Target (general to the event class) describes the element on the DOM that was responsible for this event. 
+
+Drag event can hold extra data which we can attach to a drag and drop interaction. Because such interation
+is composed of multiple events which need to share information among each other. Done with the help
+extra data that can be attached. 
+Drag event also has event target. 
+
+...
+
+Adding events---------------------------------
+
+Old way: Not recommended anymore. 
+<button onclick="alert('Hello There')"> Click Me </button>
+
+Better on js:
+button.onclick = () => {
+    alert("Hello there")
+};
+
+And the best way is:
+button.addEventListener("click", () => { alert("Hello there") })
+button.removeEventListener()
+
+Removing event listeners-----------------------------
+button.addEventListener("click", buttonClickHandler);
+
+setTimeout(() => {
+	button.removeEventListener("click", buttonClickHandler);
+}, 3000);
+
+Removing event listeners have a couple of pitfalls. 
+You remove an event listener not by using some id, that would be returned after adding them - like timeouts and intervals
+rather, you remove them them by sepcifying the exact same arguments you used for the insertion. 
+
+The function instance has to be the same. 
+
+So using anonymous functions don't work, because they create new instance sof the callback. 
+
+*** Similarly, using bind() on the same function instance also does not work, because, 
+bind() generates a new instance with the bound argument. 
+
+button.addEventListener("click", buttonClickHandler.bind(this));
+
+button.removeEventListener("click", buttonClickHandler.bind(this));
+
+DOES NOT WORK. 
+
+You have to have one instance of the bound function. 
+
+const boundInstance = buttonClickHandler.bind(this);
+
+
+Event Object----------------------------------------
+Whatever causes an event typically also provides some data along with such event, to describe it, 
+to give some extra metadata, or to give you methods to control how the event behave afterwards.
+
+Get event object as argument to handler. 
+For example the mouse event object, has properties that say if the ctrl or alt key was pressed during the click. 
+We get the button pressed (0 for left button). We get clientX, clientY - that is the exact coordinates
+of where the pointer was on the client screen
+offsetX, and offsetY gives the coordinate of the pointer inside the element. 
+It also hast "target" for the element that was clicked. target gives access to the button DOM element. 
+
+
+Other events than click--------------
+
+mouseenter: Whenever mouse enters the element. 
+This event has a property: relatedTarget, that tells which element the mouse was coming from.
+Here it is the div element surrounding the button.
+
+** HOWEVER, if you move the pointer too fast, it might be able to detect that pointer placed inside
+<div>. Because it checks for position periodically. Therefore movign very fast, will make two detections 
+not detect the div element, rather gives a more outer element, like the html. 
+
+Can register events on any DOM. 
+
+YOU can register to events on the entire window. You can listen to scrollEvents there. 
+Fires alot of events at once, for each scroll detecting on periodic observations. 
+This event should be used carefully, because if you do some heavy calculations when this event
+** occurs - because it occurs alot per scroll, you'll slow your page down. 
+
+Usecase: We can check how far the user is from the bottom, thereby adding omre content if the user
+is close. This provides the 
+    **** infinite scoll **** 
+feeling from social media sites.
+
+Almost all DOM elements, support ALL events. 
+
+
+Another event type--------------------------------
+Form submit button sends your form data to your server. In this case, we have no
+web server, we serve this through the localhost file protocol. It tries to 
+send this to the source that served the html file. POST request. 
+
+BUT, often you want to stop that. You don't want to send the data directly.
+Maybe you want to step in with javascript and VALIDATE the input and then
+send it to the server. That latter part can be done using HttpRequests in JS. Later.
+
+But to interfere submit buttons, we can listen to that. 
+We can listen for the "submit" event on the FORM. 
+This SUBMIT event, is only available on the FORM DOM. 
+
+However, because the page reloads, if we console.log() then we lose that upon reload. 
+The Event object does not only give us some properties. It also gives us some methods. 
+
+event.preventDefault()
+Prevents the default behavior the browser would apply for this event otherwise. 
+The default behavior depends on the kind of event. 
+
+For a "submit" event, the default behavior is to submit that form to a server. 
+For a LINk that would be to go to that link. 
+
+You can always block the browser from following it's default behavior. 
+And implement your own logic. 
+
+It's something to be aware of, because you'll often need it to build the exact UX you want. 
+Where you want to override the default behavior of forms. 
+
+Capturing and bubbling----------------------------------------------------
+Events in browser side JS, have 2 phases, through which they run. And where they trigger your event
+listeners. 
+1. Bubbling 2. Capturing Phase. 
+
+<sectiion>
+    <div>
+        <button></button>
+    </div>
+</section>
+
+When we click the button, the browser runs through two phases, where it checks for listeners to that
+event. First it runs through a phase called the capturing phase, second it runs through the bubbling phase. 
+
+Capturing phase - goes from outside to inside. Parent to child. Top Down. 
+It's important to understand, that such a click event on a nested button like here, cannot just
+be listened to with event listeners on the button, but also with an event listener on that 
+<section>. And the browser during that capturing phase checks if you got a capturing event listener, 
+on the <section> registeners, which would then run its function, before any event listeners
+registered on the button. 
+
+Bubbling phase, does the opposite. It goes from child to parent. Bottom Up.  
+** ALL EVENT LISTENERS REGISTERED WITH addEventListener() are by default registered on that bubbling 
+phase. 
+Which means if we have an event listener on the button, and on the section, the button event listener
+will run first. The section event listener will run second. 
+We can change this and also do interesting things with thet bubbling and capturing behavior. 
+
+buttons[0].addEventListener("click", (event) => {
+	console.log("Clicked Button");
+	console.log(event);
+});
+
+const div = document.querySelector("div");
+div.addEventListener("click", (event) => {
+	console.log("Clicked Div");
+	console.log(event);
+});
+
+Both execut, button and then div. So it executes bottom up. 
+By default, all event listeners are registered on the bubbling phase. Which means, the capturing
+phase, which runs first - IS TOTALLY IGNORED. 
+BUT THEN, when the browser checks from bottom up, it first finds that on the element itself there
+is a listener, therefore that runs first. THEN it checks if there was a listener on the surrounding 
+elements. It checks for a listeners on an element, then looks in all its ancestors. If they are there
+they execute them. 
+
+*** Adding event listeners to the capturing phase just requires putting the third argument to 
+addEventListener() to true. Which is false by default. By setting that to true, we're telling JS
+that this event listener should be part of the capturing phase. 
+
+That way the evnt listener for <div> runs before the event listener for button. 
+div.addEventListener("click", (event) => {
+	console.log("Clicked Div");
+	console.log(event);
+}, true);
+
+This can be useful if you want to switch order. If you have event listeners on the element itself, and also
+on the ancestors - and you want to execute the ancestor event listner first. 
+
+This entire process for having multiple listeners for the same event, thats called PROPAGATION. 
+That means, the event PROPAGATES, either bottom up, or top down, or really both. 
+
+The event occurs on the element, but is listened on all ancestors. It bubbles up. 
+
+You can prevent this. 
+We really really want to react to clicks on the <div> and not on the button. It could be a requirement 
+you have in an app. 
+
+To make sure that the click event for the button does not propagate anymore, you can call 
+
+event.stopPropagation()
+
+NOT THE SAME as event.preventDefault(). Prevent default stops the default behavior that a browser 
+might perform upon certain events. For "click" event on a button, we have no default bahavior. 
+But click event on a link would have a default behavior of going to that links destination. 
+
+** But .stopPropagation) does nothing with the default behavior.
+
+The default behavior is still executed. For a form, that form would still be submitter. But it stops
+the propagation. Which means any other listeners for the same type of event on some ancestor element
+will NOT trigger their event listeners for this event. 
+
+button.addEventListener("click", event => {
+    event.stopPropagation();
+    console.log("Clicked button);
+});
+
+Here, <div> event listener will not trigger for this event, WHEN BUTTON IS CLICKED. 
+
+But if div is clicked separately, then that event listener will trigger. 
+
+event.stopImmediatePropagation();
+That is useful if you have multiple event listeners on the same element. 
+Then after the first event listener, the other button listeners would not run anymore. 
+
+HOWEVER, NOT ALL EVENTS PROPAGATE. 
+This is intuitive. 
+
+For a click it makes sense. When we click somethign, we might want ot listen for click on the parent
+element. For hovering over something, it makes less sense. Because the elements enter on different
+boundaries. 
+
+If you need to know, then print the event object, and look at the "bubble" property. 
+If it is set to true, it bubbles.
+
+There are a couple of events which don't propagate up because that typically would lead to undesired
+behavior, like drag events. 
+
+
+Event delegation-----------------------------------------
+
+If we have a list of items, and we want to highlight them upon click, then we can add event listeners
+to toggle a class, that colors the li item red on click.
+
+listItems.forEach((listItem) => {
+	listItem.addEventListener("click", (event) => {
+		event.target.classList.toggle("highlight");
+	});
+});
+
+But this is cumbersome. It can get bad from a performance and memory perspective. Because we have a lot 
+of event listeners. 
+
+Alternative (Delegate apporoach):
+Instead of adding event listeners to all of the items, we take advantage of the event propagation. 
+We add event listener on the list. Because events bubble up, we can also listen to that on the list. 
+
+list.addEventListener("click", (event) => {
+	event.target.classList.toggle("highlignt"); // target will refer to the item we clicked. 
+})
+
+This is the event delegation pattern.
+
+This can become problematic if we have a more complex structure. 
+Because our event listener on list blindly toggles the classlist of the target, depending upon
+where we click on the complex html structure, it will have different targets. Therefore have 
+different portions of coloring. 
+
+We have another property on event. 
+
+event.currentTarget
+
+This is different from rfom target. That is not the event target, but rather that target you added
+the current listener on. 
+But that is not useful here. 
+
+<ul>
+    <li>
+        <h2>Item 1</h2>
+        <p>Some text</p>
+    </li>
+    <li>
+        <h2>Item 2</h2>
+        <p>Some text</p>
+    </li>
+    <li>
+        <h2>Item 3</h2>
+        <p>Some text</p>
+    </li>
+    <li>
+        <h2>Item 4</h2>
+        <p>Some text</p>
+    </li>
+    <li>
+        <h2>Item 5</h2>
+        <p>Some text</p>
+    </li>
+</ul>
+
+We can use a combination of event.target and DOM traveral to get access to the list item. 
+If we have a have a look at our list item, the event target has to be somewhere inside <li> item. 
+Hence it's either the <li>, <h2> or <p>. 
+The method that can help is 
+
+event.target.closest(cssSelector)
+closest() exists on all DOM elements. And it traverses up to the tree ancestor. 
+NB: closest() does include the element itself too. So if you clicked on the list item itself this
+will give us that. 
+
+list.addEventListener("click", (event) => {
+	event.target.closest("li").classList.toggle("highlight"); // target will refer to the item we clicked.
+});
+
+So the correct implementation of the event delegation pattern is the combination of 
+event propagation and DOM traversal. 
+
+Trigger Events Programatically----------------------------------
+
+Ofcourse we could store a listener, and call that from wherever we want. But we can actually render
+an event. 
+Like <form>, we might want to submit data in another way than clicking the button. We trigger the 
+submit event from some other place. 
+
+form.submit()
+
+or, 
+button.click()
+
+So a lot of events that you can listen to have methods on DOM to trigger them. 
+
+However, you'll note that the form.submit() is not calling the listener. But button.click() is. 
+button.click() also sends a dummy event object to the event listener with dummy coordinates. 
+
+For form submission, is not triggered. Trigerring events programatically therefore is not
+exactly the same as when a use clicks on it. It can bypass certain listeners. Like form submission. 
+** If you want to work around this form submission problem, you can select the form button element, 
+and click() that button. Basically do the same as the user clicking the button. 
+
+this is event listeners---------------------
+this is inside the target. 
+** Precisely, the event.currentTarget(). 
+
+The element which you registered the keyword. 
+
+Drag and Drop-------------------------------------------------------
+1. To make elements, you have to mark them as such. You do that setting the "draggable" attr, 
+or by setting the draggable property true on the DOM.
+
+
+2. Listen to "dragstart" event. Describe operation and append data. 
+On the draggable element. This is triggered when the user starts
+dragging an element. You can interact with the event obj to describe the drag operation. 
+
+A drag and drop operation is actually a combination of different events o different elements on 
+your page. And in order to make sure they can work together, and that you know in the place where you
+drop something, what you started to drag on another place - you can add data to that drag event which 
+is then passed around to the other events related to dragging and dropping. 
+
+Once we have started our drag operation and CONFIGURED the drag event, we have to tell JS where the 
+item can be dropped. We mark the area by adding an event listener to an element, on which the other
+element can be dropped. 
+
+
+3. Accept Drop via "dragenter" and "dragover" events. => preventDefault()
+Both will be triggered when an item is dragged onto that element. The difference is that
+"dragover" also triggers on the child elements of the element you added the event listeners. 
+
+* You have to prevent default. The default behavior is that the drop operation is CANCELLED. 
+So that, drag and drop is not allowed. Because for most parts of your page you don't want to allow
+it - so that's the default behavior of the browser.  
+
+Optional: Listen to "dragleave". (Eg. update styles)
+
+
+4. Listen to "drop" event and update data / UI. 
+
+The drop event will only be triggered if you have prevented the default on "dragover". 
+
+Optional: Listen to "dragend" event on the dragged element. (And update data / UI)
+The "dragend" event is always fired event if the drop was cancelled.
+
+
+You can change the image that is snapshotted on the drag. Default is a preview of the DOM element. 
+You could make that as you wish. 
+
+drag event has a special property. 
+
+event.dataTransfer.setData(datatype, data)
+
+Check MDN for datatypes. 
+
+Here datatype is important because we might want to check the type on the drop location. Only allow
+sepcific type. 
+
+event.dataTransfer.effectAllowed = "move";
+Here we descibe WHICH KIND OF drag and drop operation is performed. Move, copy etc. 
+
+Adding data to dragEvent:
+
+this.#listElem.addEventListener("dragstart", (event) => {
+			event.dataTransfer.setData("text/plain", this.#pid);
+			event.dataTransfer.effectAllowed = "move";
+});
+
+** We can retrive the data only from a dropEvent. 
+
+To check the type before dropEvent we have, 
+event.dataTransfer.types array of all types of the set data. 
+
+this.#ulElem.addEventListener("dragover", (event) => {
+    if (event.dataTransfer.types[0] === "text/plain") {
+        event.preventDefault();
+    }
+    this.#ulElem.classList.add("droppable");
+});
+
+To check if the drop succeeded we can check the event.dataTransfer.dropEffect
+If it is none, then drop did not succeed. 

@@ -1,0 +1,139 @@
+1. Pure functions and side effects.
+2. Factory Functions
+3. Closures
+
+Pure Function: 
+    For a given input ALWAYS produces the same output. (Stateless)
+    Also, does not trigger any side effects. (Does not change anything outside the function)
+
+Impure Functions example:
+    function addRandom(num1) {
+        return num1  + Math.random();
+    }
+
+    Side effects:
+    let previousResult = 0
+
+    function addMoreNumbers(num1, num2) {
+        const sum = num1 + num2;
+        previousResult = sum; // side effect
+        return sum
+    }
+
+    It is not obvious to the caller that the function does have side effects. 
+
+    const hobbies = ["Sports", "Cooking"];
+
+    function printHobbies(h) {
+        h.push("New Hobby"); // reference value - side effect
+        console.log(h);
+    }
+    
+    printHobbies(hobbies);
+
+The conventions related to pure-impure functions:
+    - Typically its a good idea in programming (not just in JS, but specially in JS) to aim for pure functions. 
+    Simply because they are predictable. Redices the behind the scenes element of a function. 
+
+    However, if you're writing any code, it will be impossible to avoid side effects at some point. 
+    The goal just is to minimize the amount of them. 
+
+    Make the impure-ness of a function obvious by the name. 
+
+
+Factory Function:
+    Function that produces another function. 
+
+    function calcTax(amount, taxrate) {
+        return amount * taxrate;
+    }
+
+    const vatAmount = calcTax(100, 0.19);
+    const incomeTax = calcTax(100, 0.25);
+
+    Rather than manually remembering the tax rates, we could use factory functions to embed them. 
+
+    function createTaxCalculator(taxrate) {
+        function calcTax(amount) {
+            return amount * taxrate;
+        }
+        
+        return calculateTax;
+    }
+
+    const calcVatAmount = createTaxCalculator(0.19);
+    const incomeTaxAmount = createTaxCalculator(0.25);
+
+    So, if you have a certain function which you call multiple time in DIFFERENT parts of your app
+    and it can be preconfigured in a certain way, so that you don't need to repeat yourself. 
+    
+
+Closures:
+    Every function in JS is a closure. 
+
+    If you have an inner function, that inner function can use all the variables of the outer function
+    and global variables. The outer function cannot access the inner function specific contents. 
+
+    We have different LEXICAL environment. 
+
+    the function createTaxCalculator(tax) creates a new lexical environment, and registers any 
+    variables it has access to inside of this environment. 
+
+    Each function registers it's surrounding environments and the variables that are defined in there. 
+    If these variables change, then it takes the latest value. 
+
+    let multiplier = 1.1;
+
+    function createTaxCalculator(taxrate) {
+        function calcTax(amount) {
+            console.log(multiplier);
+            return amount * taxrate;
+        }
+        
+        return calculateTax;
+    }
+
+    const calcVatAmount = createTaxCalculator(0.19);
+    const incomeTaxAmount = createTaxCalculator(0.25);
+
+    multiplier = 1.2;
+
+    calcVatAmount(100);
+    incomeTaxAmount(100);
+    
+    // These log 1.2
+    
+    So latest value is used. 
+
+    But for tax, that would be the case too. But when the inner function is created it has a look
+    at it's surrounding enviroment, the createTaxCalculator(tax). If tax would change the inner function 
+    would change the new tax value. BUT IT NEVER CHANGES. Because the only time we pass in a new 
+    value is when we execute the createTaxCalculator(tax) function. But that would be a brand new execution
+    And that won't change the prior execution of the createTaxCalculator() function. 
+
+    This is NOT OBVIOUS behavior. Closures occur in JS. But not necessarily on other languages. 
+    Every function in JS is a closure, because it CLOSES OVER the variables defined in it's environment. 
+    It kind of memorizes them. So that they aren't thrown away when you don't need them in the surrounding
+    context anymore. 
+
+    We basically have a pointer to the outer environment. But closures determine what the outer environment
+    is. 
+
+    Example:
+
+    let userName = "Max";
+
+    function greetUser() {
+        console.log("Hi" + userName);
+    }
+
+    greetUser();
+
+
+Memory Management in Closures:
+    If every function locks in the surroundings of it, does it not leave a bad effect in memory?
+    In theory that would be. But JS engines optimize this. They track variable usage. Unused variables
+    are rid off. 
+
+    
+    

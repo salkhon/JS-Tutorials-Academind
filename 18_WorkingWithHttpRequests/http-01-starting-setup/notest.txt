@@ -1,0 +1,70 @@
+Utilize JS to send HTTP request kind of behind the scenes. 
+
+2 main ways of sending HTTP requests in JS:
+1. XMLHttpRequest object
+2. fetch() API
+
+Transferring data between the client side and the server side. JSON Data and FormData. 
+
+GETting data, POSTing data. 
+
+
+What and Why?:
+    We have our script and our rendered HTML in the client side. Adn on the screen, on the rendered HTMl
+    we might have a form where the user can enter some data, and say an undordered list where we have
+    a list of posts by the user. That is a simple webpage. 
+
+    We might be powering this with the help of JS. Although such a webpage could be built WITHOUT ANY 
+    CLIENT SIDE JS CODE. You could dynamically generate this HTML code including the list of posts, 
+    which might be created dynamically, totally on the server, with a backend language, where you get data
+    from the database on the server machine and then you render different HTML content based on the 
+    page the user is visiting. 
+
+    But as an alternative to that we could utilize browser side JS to provide a better UX, where 
+    we avoid unnecessary page reloads. 
+
+    So we could have some JS code that runs on the browser attached to the webpage, where we for example, 
+    gather the user input, validate it, show the user an error message if the title of the post is 
+    missing etc. We're also may be managing "click"s on posts, may be staring a deletion process etc. 
+    Besides that basic management of what we see on the screen, besides giving us these basic tools
+    for interacting with the user input, we might want to do more on client side JS. 
+
+    Let's say the user submits the form. The traditional way of sending this to the server, would be 
+    to let the browser do the default work, you send that off to the server where you have code
+    to handle it. 
+    With JS you can prevent the default. Prevent this from hapenning, in that the form is not sent to 
+    a server. Instead you can step in with JS, for example to validate it, BUT THEN ALSO to store 
+    it on the server from inside JS. To send a HTTP request to some backend server without reloading the
+    page. Which would happen if you let the browser do it's default. You might do the same for fetching
+    posts, fetch to update the list of posts, without updating the entire page. Because if we only 
+    fetched updated posts, we don't really need to re-renedr the entire page. 
+
+    Therefore, we might want to interact with our backend, which we need to have in any case, from 
+    inside JS instead of letting the browser do with with default behavior.
+
+    Our backed would typically be an API. (Application Programming Interface). 
+
+    That means it's a webserver, that exposes so called "end points". Different URLs to which we can
+    send requests. And based on which request we send to which URL different things will happen on 
+    the server. And it's the backend developers job to decide which endpoints exist and what they do. 
+    Which HTTP requests are supported and which URLs are offered. 
+
+    Traditionally the page at the browser would communicate with the browser directly, but that's not
+    what we want here - because that would mean that our server always needs to return a brand new
+    HTML page and that page would need to reload, rerendered - that would cause PAGE FLICKERING, not the
+    best UX. 
+
+    Instead we want to reach out to these different endpoints where we for example, we might support 
+    a POST request to serverdomain.com/posts and a GET request to the same url. We might support 
+    certain pieces of data attacked to the incoming POSt request. 
+    This server does not want the default request sent by the browser, but needs specific requests
+    targetting these endpoints. That's what we can do with JS. 
+    
+    With the help of JS "behind the scenes" communication. Behind the scenese because it happens 
+    without the page reloading. Instead we use JS to send requests that are correctly configured and
+    holds all the data the server wants, to these individual endpoints. 
+
+    Communication via script attached to the page, rather than through the browser default, which 
+    reloads the page. 
+
+    

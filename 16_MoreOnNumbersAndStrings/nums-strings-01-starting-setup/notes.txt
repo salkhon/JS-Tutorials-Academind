@@ -1,0 +1,137 @@
+Numbers in JS:
+    Every number in JS is a floating point number. 
+    JS does not know integer types. 
+    Internally numbers are stored as 8 byte floats. 
+    Read float resources on wikipedia. 
+
+    max number in JS: Number.MAX_SAFE_INTEGER (2^53 - 1)
+    This is 1 less than the maximum number. So the maximum number is 2^53. 
+    But that is not safe for addition of 1. 
+    minimum number in JS: Number.MIN_SAFE_INTEGER
+
+    max value: Number.MAX_VALUE (non integer)
+
+Floating point imprecision:
+    0.2 + 0.4 == 0.6000000000000001
+    0.2 + 0.4 === 0.6 FALSE!!!
+    In the binary system, converting fractions to binary might have bit numbers exceeding the max limit. 
+    Recurring digits. 
+    Accessing Number methods on number literals: (1).toString(base)
+    (0.2).toString(2) === '0.001100110011001100110011001100110011001100110011001101'
+    0.2, a finite decimal rational number on decimal is a recurring number on binary. 
+    So we lose information. 
+
+    Often in JS it fixes this. It converts back to the real original form. Most programming 
+    languages do this. 
+
+    (0.2).toFixed(20): Represent with 20 decimal places '0.20000000000000001110'
+    So JS was rounding the extra numbers. 
+
+Representation Fix:
+    To avoid 0.2 + 0.4 mischap, (0.2 + 0.4).toFixed(2) === "0.60"
+
+Internal Fix:
+    How do we handle money if floats are imprecise?
+    To get prefect precision, multiply your number by 100. So that you ONLY WORK WITH INTEGERS. 
+    Represents the 2 digit floating point number with integer format. 
+    There are certain 3rd party libraries provide you tools to fix such imprecision. 
+
+BigInt:
+    Primitive value. Allows to represent beyond Number.MAX_SAFE_INTEGER
+    Add 'n' after your number. 
+    This can represent arbitralily large numbers with it. Internally it is represented with 
+    a STRING instead of a 64 bit floating point number. 
+    THERE IS NO FLOATING POINT CALCULATION WITH STRING BIG INT. 
+    You can't operate on Big int and other types. Use explicit conversions. 
+    Big int to int: parseInt(10n)
+    So expliit conversion: parseInt(10n) - 4
+    Or convert the other number to a big int. 
+    10n - BigInt(4)
+    Divisiion between big ints omit decimal points. So, 5n / 2n == 2n
+
+Number Object:
+    Number.MAX_SAFE_INTEGER
+    Number.MIN_SAFE_INTEGER
+    Number.MAX_VALUE
+    Number.MIN_VALUE
+
+    Number.POSITIVE_INFITIY
+    Number.NEGATIVE_INFINTY
+    Literal: 'Infinity' and '-Infinity'
+
+    Check finiteness: Number.isFinite(number)
+
+    Number.isNaN(number)
+
+    Number.parseInt()
+    Number.parseFloat()
+
+Math Object:
+    Constants:
+        Math.E
+        Math.PI
+    
+    Methods:
+        Math.sqrt()
+        Math.sin()
+        Math.pow()
+        Math.abs()
+        Math.random()
+
+
+String Methods:
+    "hello".toUpperCase()
+    "hello".startsWith("he")
+
+    Template Literals (Formatted Strings):
+    `My name is ${name}`
+
+Tagged Template:
+    Function that works together with a template literal. 
+
+    function productDescription(strings, productName, productPrice) {
+        return "This is a product";
+    }
+
+    const prodName = "JS Course";
+    const prodPrice = 29.99;
+    const productOutput = productDescription`This product (${prodName}) is ${prodPrice}.`;
+
+    console.log(productOutput);
+
+    JS will call this function and pass the string in, but not as a single argument but as 3 arguments. 
+
+    Tick Function call:
+    1. Non dynamic parts of the template literal part as an array on the first argument. 
+    2. Further arguments of the template string as additional arguments. 
+
+    Where is this useful?
+    Tagged templates can be useful where you want to conveniently create
+    some output, based on some string. 
+    Eg. Take some input text and convert it to a different text.
+
+    function productDescription(strings, productName, productPrice) {
+        let priceCategory = "cheap";
+        if (productPrice > 20) {
+            priceCategory = "expensive";
+        }
+        return `${strings[0]}${productName}${strings[1]}${productPrice}${strings[2]}`;
+    }
+
+    const prodName = "JS Course";
+    const prodPrice = 29.99;
+    const productOutput = productDescription`This product (${prodName}) is ${prodPrice}.`;
+
+    console.log(productOutput);
+
+    Functional way to change the template literal. Can convert template literal
+    to corresponding object, or do whatever. A functional way of processing
+    template literals. 
+
+
+Regex:
+    const regex = new RegExp('pattern');
+    or literal notation, 
+    const regex = /^\S+@\S+\.\S+$/
+    so forward slashes and inside we have the regex pattern. 
+    
