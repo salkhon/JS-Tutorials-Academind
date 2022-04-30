@@ -10,7 +10,7 @@ GETting data, POSTing data.
 
 
 What and Why?:
-    We have our script and our rendered HTML in the client side. Adn on the screen, on the rendered HTMl
+    We have our script and our rendered HTML in the client side. And on the screen, on the rendered HTMl
     we might have a form where the user can enter some data, and say an undordered list where we have
     a list of posts by the user. That is a simple webpage. 
 
@@ -56,7 +56,7 @@ What and Why?:
 
     Instead we want to reach out to these different endpoints where we for example, we might support 
     a POST request to serverdomain.com/posts and a GET request to the same url. We might support 
-    certain pieces of data attacked to the incoming POSt request. 
+    certain pieces of data attached to the incoming POST request. 
     This server does not want the default request sent by the browser, but needs specific requests
     targetting these endpoints. That's what we can do with JS. 
     
@@ -67,4 +67,392 @@ What and Why?:
     Communication via script attached to the page, rather than through the browser default, which 
     reloads the page. 
 
+HTTP:
+    We have our script (client side, the code that runs in the browser) and we have our server (backend). 
+    Frontend, detached from the backend. 
+
+    The backend could run on an entirely different domain than our frontend. So we might be HTML page
+    and JS on mypage.com whereas the server-side logic can be hosted on a completely different server, 
+    say mybackend.com. Still these two ends can communicate. 
+
+    So the frontend script is responsible for fetching and sending data. Server-side responsible for 
+    storing and retrieving data (with database, database might runon a different server). 
+
+    Important: You don't directly connect your client side to a database. For security reasons, you'd expose 
+    your db credentials on your client side coed which you don't want to do. Instead you talk to a 
+    web server and that web server might talk to a database. 
+
+    Communication between the client side and the server happens through the help of HTTP REQUESTS and
+    RESPONSES. These requests and responses have to be configured and set up in a certain way. Following
+    a certain structure. 
+
+    When you're sending a request to a server, it needs to know the address. The URL. Domain + path. 
+    Path in the part after the domain. 
+    mypage.com/posts; Domain: mypage.com; Path: /posts 
+
+    Each HTTP request has an HTTP method assigned to it. GET, POST, PATCH, PUT, DELETE - they decribe 
+    what you. However, it's important to know, it's entirely up to the server to decide for which
+    method + url combination the server wants to do what. So with the method you don't tell the server
+    what to do, the server just exposes different methods to endpoints. So the server might support
+    a POST request to /post might be supported, but a PATCH request might not. It's up to the server-side 
+    coder to decide these. 
+
+    Typically, you go for method + url combinations that make sense logically. 
+    GET requests are typically there for getting data. 
+    POST requests are there to create data (and / or persist) on the server. 
+    PATCH and PUT are there to update data. PATCH: updating existing data, PUT: overwriting data. 
+    DELETE: to delete data. 
     
+    If you use a url method combination that is not supported by the server, you'll get an HTTP error. 
+
+    Other parts of HTTP requests are extra headers, extra meta-data that can be attached to HTTP request. 
+    Some requests, for example a POST reqeust also holds a request BODY, EXTRA DATA attached to the
+    request. 
+
+    That data then can be sent in different formats, the server that tells you which format it expects, or
+    supports. The most common format is JSON. We also have FormData, Binary etc. 
+    
+    Observation: API sends JSON data upon GET request. Unlike how it's done on Flask. In flask you'd
+    build the page from the backend. But here, the API just sends data so the frontend can put it
+    appropriately?
+
+Sending requests:
+    1. XML http requet object. 
+
+        const xhr = new XMLHttpRequest();
+    
+    This object will allow you to send http requests, it's built into the browser. 
+
+    2. Before sending, we need to configure the request. 
+
+        xhr.open(method, url); // .open() does not open a connection or anything. No network activity is started by this. 
+        // it's just the first step toward configuring the request. 
+
+    This configures the request. 
+
+    3. To send:
+
+        xhr.send(JSONData);
+        To append data to outgoing request, you pass in JSON data to xhr.send(data);
+
+    In the script the request has been sent. This can be observed on the Network tab of the developer tools. 
+
+    The format of the data is important. You exchange data between the client side and the server side in
+    a ceratin format. Technically, there are no restrictions. You can send plain texts, HTML markup, 
+    XML markup, csv files or JSON. 
+
+JSON:
+    Javascript Object Notation.
+
+    Almost the same as JS objects. 
+
+    In JSON you can only have data, no methods. 
+    In addition, your property names have to be wrapped in double quotes "". 
+    As property values: Numbers, boolean, strings, other objects or arrays, nulls. 
+
+    So data is received by JSON format. It needs to be parsed. 
+
+    xhr.send();
+
+    // we have to wait for the Load event. It's fired automatically when the data is loaded, when 
+    // the request is completed. 
+
+    xhr.addEventListener();
+
+    // or, 
+
+    xhr.onload = function() {
+        // we don't reveive the reponse as an arg. 
+        console.log(xhr.response);
+    };
+
+    The response is JSON data. Not an array. So you can't add new elements to it. 
+    To use it, you have to convert it to JS types. JS has built-in helpers to do this conversion. 
+
+    JSON.parse(); // JSON -> JS data
+    JSON.stringify(); // JS data -> JSON
+    
+    json's are just strings in the end.
+
+    Important: there is a convenince in XMLHttpRequest object to convert to JS data automatically.
+    If you add, 
+
+    xhr.responseType = "json"; 
+    // but you can't pre configure one type always. 
+
+Templates:
+    Templates can be put into HTML for the script to read and make an element out of. 
+    Template elements ahve .content property, that gives the child node of that template.
+    Using document.importNode() we can transform the template HTMl to a script node. 
+
+    for(const post of listOfPosts) {
+        const postElem = document.importNode(postTemplate.content, true);
+        postElem.querySelector("h2").textContent = post.title.toUpperCase();
+        postElem.querySelector("p").textContent = post.body;
+        ULElem.append(postElem);
+    }
+
+    This allows for the imported template item to have necessary classes for CSS styles and children
+    slots for inserting appropriate content. 
+
+    PS: await is: await until resolve, and yield. 
+    It's basically attaching the latter code with the resolve() it's awaiting. 
+    So, promise.resolve() tells the awaiting code segment to continue. That serves as a callback. 
+
+Status for Request Response:
+    200-ish means success. 
+
+    200 - success. 
+    201 - successfully created. 
+
+
+HTTP Errors:
+    HTTP requests can fail. 
+    The internet might be bad, the server might be down, invalid data might be sent etc. 
+
+    To be informed about the failure, we have to attach another listener on XMLHttpRequest object. 
+
+        xhr.onerror = function() {
+            
+        }
+
+        // or
+
+        xhr.addEventListener("error", (event) => {
+			console.log(xhr.response);
+			console.log(xhr.status);
+		});
+
+    IMPORTANT: The error handler does not kick in for http requests that are technically successful. 
+    Where we just have a server side error, where we just get back a non 200 status code. 
+
+    This errror function will execute if you have a NETWORK error. That is, if the request fails to be
+    sent, or does time out. 
+
+    If you have a request that leaves your page successfully, and you get back a response, 
+    EVEN IF THAT RESPONSE TELLS THAT SOMETHING IS WRONG ON THE SERVER SIDE, for example, that the
+    path was not found there, then you're not making it into the ERROR handler, but the LOAD handler. 
+
+    Because you have a correct request and response.
+
+    So you should check status on load handler.  
+
+    Key takeaway: YOU DON'T MAKE IT INTO THE ERROR HANDLER (xhr.onerror) BECAUSE THE SERVER REPORTS 
+    BACK A NON SUCCESS STATUS CODE, BUT INSTEAD YOU STAY IN onload IF THAT HAPPENS. AND YOU 
+    ONLY MAKE IT INTO onerror IF THE REQUEST FAILS FOR OTHER REASONS, if you have no internet connection etc. 
+    Therefore in .onload you should also handle non success status codes. 
+    
+
+FETCH API:
+    Built to be more aligned with modern JS. To avoid the clunkiness of XMLHttpRequest event handlers. 
+
+    It revolves around the globally available function: fetch() 
+
+        fetch(url); // will send a GET request to that url. 
+
+    fetch() by default is promise based. We don't have to promisify it ourselves, it uses promise. 
+    That means we don't need to instatiate our own promise. 
+
+    Instead we can just return the result of fetch() because it is a promise. 
+
+    ** NB: fetch() does not give us the parsed response like XMLHttpRequest. But it gives us a
+    streamed response. The Reponse object we get back from fetch() does not hold the response body
+    in a way that is ready to use. Instead you have to get your data by, 
+        response.json();
+    
+    And that yields a new Promise. 
+
+        fetch(url)
+            .then(respose => {
+                return response.json();
+            })
+    
+    response.json() will parse the body of the reponse and transform it from json to JS arrays and objects. 
+    It just not parse it, so it's not a direct replacement for JSON.parse(), it also turns the
+    streamed response body (which you have on the response variable), into an accumulation. 
+
+    KEY: you need to call response.json() to convert your streamed unparsed response body into
+    a snapshot parsed body. 
+
+    That way the overall http request will return a promise that will eventually return that parsed data. 
+
+    Besides response.json() you have, 
+        response.text() // plain text, stream -> snapshot
+        response.blob() // downloaing file. 
+
+
+    POST with fetch():
+        Unlike xmlhttprequest you don't pass in the request method directly. Instead you pass in a 
+        seconrd arg, where you can configure the request. 
+
+            fetch(url, {
+                method: method, 
+                body: JSON.stringify(data)
+            }).then((response) => response.json());
+
+        Same with deleting. 
+
+    Error Handling: 
+        Just like XMLHttpRequest, a 400-ish reponse code will not trigger an error. 
+
+        return fetch(url, {
+                method: method,
+                body: JSON.stringify(data),
+                headers: {
+                    "Content-Type": "application/json", // tells the server, my request has json data.
+                    "rustin": "cohle"
+                },
+        })
+            .then((response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw new Error("Something went wrong server-side");
+                }
+            })
+            .catch(error => {
+                console.log(error);
+                throw new Error("Something went wrong!!");
+            });
+
+        What if we want to look into the body of the response. Because often for server-side errors, 
+        the server might attach extra info with the reponse body. It's not just about the status code. 
+        We might want to parse that reponse body to get the data the server might have added. 
+
+        For XMLHttpRequest that would have been easy, because we could just access the xmlhttprequest.response. 
+        But for fetch(), that is a stream. 
+        We don't have direct access to the body. We first need to call response.json(). 
+        But response.json() is a promise, it's not available the next line. (we have to await or .then().)
+
+        We can just get the response.json() data from an earlier .then()
+
+        But that way, the response.json() will lose the status code property. So we can't have the
+        reponse body and the status code at the same place. 
+
+        return fetch(url, {
+                method: method,
+                body: JSON.stringify(data),
+                headers: {
+                    "Content-Type": "application/json", // tells the server, my request has json data.
+                    "rustin": "cohle"
+                },
+        })
+            .then(reponse => response.json())
+            .then((response) => {
+                if (response.status >= 200 && response.status < 300) { // DONT HAVE THIS HERE!!
+                    return response.json();
+                } else {
+                    throw new Error("Something went wrong server-side");
+                }
+            })
+            .catch(error => {
+                console.log(error);
+                throw new Error("Something went wrong!!");
+            });
+
+        We have to have response.json() when the error occurs. Then that means that there has to be
+        a promise chain within a promise chain.
+
+        And that new chain error does not stop the outer chain, so the latter code executes in error. 
+        but if we throw the error ourside the inner chain, we no longer have the errorData. 
+        WE have to return the inner promise chain error throwing .then(), that is merged with the
+        outer chain. 
+
+        return fetch(url, {
+                method: method,
+                body: JSON.stringify(data),
+                headers: {
+                    "Content-Type": "application/json", // tells the server, my request has json data.
+                    "rustin": "cohle"
+                },
+        })
+            .then((response) => {
+                if (response.status >= 200 && response.status < 300) { // DONT HAVE THIS HERE!!
+                    return response.json();
+                } else {
+                    return response.json().then(errorData => [
+                        console.log(errorData);
+                        throw new Error("Something went wrong server-side");
+                    ])
+                }
+            })
+            .catch(error => {
+                console.log(error);
+                throw new Error("Something went wrong!!");
+            });
+
+    
+
+Headers:
+    For some APIs you need to decribe which type of data you're sending them. Or, other APIs might
+    need extra authenticaion data. And headers are meta data that you can attach to requests. 
+
+    The browser and the server attach default headers to the request response. 
+
+    Fetch:
+        You can add headers on the config object. Every header is a key value pair. 
+
+        fetch(url, {
+            method: method, 
+            body: JSON.stringify(data), 
+            headers: {
+                "Content-Type": "application/json", 
+            }
+        })
+
+        The types of headers you can add are generally standardized. But you can add any arbitrary headers
+        you're coming up with. A header only makes sense to be added if the server expects it. And the 
+        server does something with it. If not, you can add, but meaningless. 
+
+    XMLHttpRequest:
+        xmlhttprequest.setRequestHeader("Content-Type", "application/json);
+
+XMLHttpRequest vs fetch API: 
+    Both allow us to send requests. fetch API is modern, and not supported by older browsers. 
+    A big plus is it's generally easy to use, and uses promise out of the box. 
+
+    A drawback is, the error handling with error body can be messy. 
+
+    Another option is using a 3rd party library, which might wrap one of the approaches so implementation
+    is hidden. 
+
+
+Form Data: 
+    It's up to the server for which type of data it accepts. JSON placeholder API, only works with 
+    JSON. But you might be working with different APIs, there different data might be accepted. 
+    You can send files, binary data and add this as a body. For example, a file pointer, the user
+    picked on a file picker.
+
+    You can also add form data. 
+
+    const fd = new FormData(); // you can add key value pairs. 
+    // it has a different format than JSON. 
+
+    fd.append("title", title);
+    fd.append("body", content);
+    fd.append("userId", userId);
+    fd.append("someFile", filePointer, "renamedfile.png");
+
+	sendHttpRequest("POST", "https://jsonplaceholder.typicode.com/posts", fd);
+    
+    fetch(url, {
+		method: method,
+		body: data, // no longer JSON
+		// browser sees form data, and sets headers automatically
+	})
+
+    Why FormData?
+    - More structural
+    - Can easily add files, picked in a file input. Can send mixture of text kv pairs, and files. 
+    - Can be used automatically to parse a form, instead of manually extracting textContent. 
+
+    Used to replicate browser default form submission behavior, without the reloading the page. 
+    So preventing the deafult, whilst extracting the FormData. 
+
+    const fd = new FormData(formElem);
+    // JS will try to collect all data from the form. For it to succeed you need to make sure that 
+    // your inputs have a 'name' attr. 
+
+    <input type="text" id="title" name="title">
+
+    Otherwise FormData is unable to identify these inputs. You still can append extra data. 

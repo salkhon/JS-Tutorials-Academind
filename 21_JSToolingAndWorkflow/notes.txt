@@ -1,0 +1,322 @@
+Modules:
+    Pro:
+        - Distributed, manageble code. 
+
+    Con:
+        - All the scripts have to be downloaded via separate http requests one by one. 
+
+JS Tooling:
+    All about managing project with certain tools automatically optimize and combine our
+    code. but gets out of our way when writing our code. So that when writing, we write the best
+    possible convenient way - and still get an optimized and better output.  
+
+    Actually we're already using tooling. Serve js on npm is one. We needed this development
+    server to have a more realistic testing enviroment. Where we actually serve our webpage as if
+    it were served by a web server somewhere on the internet. Previously we just opened the
+    index.html file on the browser, that was received by the browser via the local 
+    file protocol. Which does not cover Cross Origin Security policy for moduling. 
+
+    So serve js is one of the tools we can use to fully utilize JS. 
+
+Limitation ofs "Basic Projects"
+    - Micromanagement of imports (if we're not using modules) OR 
+    lots of unnecessary http requests. (if we're using modules)
+
+    - Our code is not really optimized. (not as small as possible). 
+
+    - Potentially sub-optimal Browser Support. 
+
+    - Need to reload page manually (after changes to code). We need dev server that reloads
+    when the code changes. 
+
+    - Code quality is not checked. 
+
+    Tool Purpose                    Tool Name                   What is does and why
+    ------------                    ---------                   --------------------
+    A development server            webpack=dev=server OR       Serve under (more) realistic
+                                    serve (standalone tool)     circumstances, auto-reload. 
+    
+    A bundling tool                 webpack                     Combine multiple files into 
+                                                                bundled code (less files). We 
+                                                                write on multple files, but merge 
+                                                                then into a single file so many http
+                                                                requests are not sent. 
+
+    Code Optimization Tool          Webpack Optmizer plugins    Optmize code (shorten function
+                                                                names, remove whitespaces)
+
+    Code Transpilation              Babel                       Write modern code, get "older"
+    (compilation to older Browser                               code as output. 
+    code)
+
+    Code quality checker            ESLint                      Check code quality, check for
+                                                                conventions and practices. 
+
+    
+Workflow:
+    <Your Code> : workflow starts upon "Save" / Command. 
+
+    During Development (upon "save")
+    - Linting (ESLint)
+    - Bundle (Webpack)
+    - Reload Dev Server
+
+    No matter what workflow we are in, we need npm and NodeJS. ----> installed globally. 
+    NodeJS will be used by the tools to work on your machine. And npm is the node package
+    manager, used to install these tools. Also to orchastrate them, start different workflows. 
+
+    For production (upon certain "command")
+    - Linting (ESLint)
+    - Bundling (Webpack)
+    - Transpile: Compiled to older browser code (Babel)
+    - Optimization
+
+    Production ready code.
+
+
+Linting:
+    Fro VSCode install extension. Enable. 
+
+    For the browser extension to work, we need to install ESLint globally on our machine or 
+    in the project. 
+
+    ** We need to make this project managealbe by npm. 
+    Local installation of modules by npm, not gloabally. 
+
+    1. Create a npm config file, to tell npm that this project should be managed by npm. 
+    And then manage different dependencies and packages we want to use there. 
+
+        npm init
+
+    This asks you to define a package name, version, description, entry point, test command, git repo
+    keyworkds, author, license.  
+
+    With that, package.json is created. Now we can install project specific packages with npm. 
+
+    2. Installing ESLint on project. 
+        npm install --save-dev eslint
+    Here save-dev means, installed in project, but as a development dependency. So when packages are
+    installed with production option, these packages won't be installed. Only packages in "dependencies"
+    will be installed. ("devDependencies" won't). 
+    ** Development dependency because it's not a 3rd party package which is used, not part of the
+    code that we upload to the server. Just a package needed to do something suring development.  
+
+    You can see eslint and the version on package.json.devDependencies.
+    version "^8.14.0" means this or higher.
+
+    We also have a package.lock.json, which holds info about this dependency and all dependencies 
+    of this dependency. 
+
+    * You now also have a "node_modules" folder. This folder holds the dependencies you installed. 
+    All nested dependecies.  
+
+    * Share your code without node_modules
+
+    * you can reacreate node_modules by running
+        npm install
+    It looks at pacakge.json, dependencies and development dependencies - and installs all them. 
+
+    3. Creating ESLint Config
+    Ctrl + Shift + P, creates an eslint file for your configuration. Then any code that does not
+    follow your rules will be marked with error. You can change rules by looking at the error, 
+    what rule it's referring to. Check docs. 
+
+
+Webpack:
+    Webpack is a bundling tool. It's actually more than that, it orchastrates our build workflow. 
+    Really good documentation. 
+
+        npm install --save-dev webpack webpack-cli 
+
+    To use webpack we typically create a config, where we tell webpack what to do. 
+
+        create file: webpack.config.js
+    This is a file which webpack will use to do it's job. 
+    
+    This file under the hood is executed by nodeJS. Generally nodeJS is just JS with some extra features. 
+    
+    The one thing that is new is how we export something in nodeJS. Instead of using "export" to make
+    something available outside this file we use:
+
+        module.exports = {};
+
+    This simply is the syntax nodeJS uses to expose the object {} outside the file. And webpack will 
+    import the object we export. And this object will be our Configuration Object. 
+
+    - Webpack needs to know the starting point in your application. Where in your source files, the entry 
+    point of your project is. It will take that entry point, analyze the imports - and then resolve
+    all the nested dependencies in the tree. 
+    Here, webpack will go into app.js, look at it's imports, see that we import from "./ProjectList.js", 
+    go to the ProjectList.js file, look at it's imports, and see ProjectItem and DOMHelper, ...
+
+    Therefore we need to inform webpack what our entry point is. 
+
+    Now we need to modify our folder structures. We need to split it to 
+    1. Input source files
+    2. Output generated files
+
+        Create folder: src
+
+    This holds your input files. Move App, Utility and app.js to src. 
+    
+    So now we want to specify ./src/app.js as the entry point, and specify ./assets/scripts/ as the 
+    output point. 
+
+    You can have multiple entry points, but most simple projects have one central entry point. 
+
+    To generate path for output, we can use a utility module built into nodeJS. That's the 
+    "path" package. 
+
+    Just like export, nodeJS has a different import syntax. 
+        const path = require("path");
+    
+    Imports the path package and stores it's features pointed by the "path" constant.
+    
+    Building path with the help of this tool:
+        path.resolve(__dirname, "assets", "scripts");
+
+    Here __dirname is nodeJS's internal current path constant. 
+    1. Creates an absolute path, as webpack.config.js needs an absolute path in output. 
+    2. Absolute path starts at config file's current path: __dirname. 
+    3. Adding /assets/scripts, so we generate the path to that folder. 
+
+    So our exported config for webpack at webpack.config.js has the cofig file to webpack input and
+    output:
+        const path = require("path");
+
+        module.exports = {
+            entry: "./src/app.js", 
+            output: {
+                filename: "app.js",
+                path: path.resolve(__dirname, "assets", "scripts")
+            }
+        };
+
+
+    - To use webpack, open package.json, there you have "scripts" property. This allows you to setup some
+    scripts which you can run through the command line. There in "scripts" you add - 
+        "build": "webpack"
+    
+    (So scripts in package.json can be executed using
+        npm run
+    )
+    
+    This will use webpack cli tool, which will use webpack. 
+    Webpack will automatically search for "webpack.cofig.js" file, and take this cofiguration into
+    account. 
+
+        npm run build
+    
+
+    We get 2 files on the configured output directory. Both of them unreadable, because has no whitespace. 
+
+    * We get 2 files, because we have "lazy loading" on ProjectItem.js, where we load Tooltip.js when we
+    need it. Dynamic import.
+    * Therefore, Tooltip.js and all the dependencies that only belong to the Tooltip are packed
+    into it's own bundle. So that this is still only loaded when we need it. 
+
+    So we get the best of both worlds. Load some code only when we need it, and load code that we need
+    from start in one request. 
+
+    ***
+    In the example project, we only have one main entry point: app.js.
+
+    In bigger projects - with multiple HTML pages - you might have multiple scripts for the different pages (HTML files) you might be building. Hence you might need more than one entry point because you want to build more than one bundle (i.e. not every HTML page uses the same script).
+
+    This can easily be configured with Webpack:
+
+    Instead of
+
+        entry: './src/app.js'
+    use
+
+        entry: {
+            welcome: './src/welcome-page/welcome.js',
+            about: './src/about-page/about.js',
+            // etc.
+        }
+
+    Now Webpack will look up all these entry points and create one bundle per entry point - you can then link to these bundles in your respective HTML files.
+
+    A simple rule that makes sense for most projects is:
+
+        One entry point per HTML file because you typically have one script per HTML file.
+
+    If you share a script across multiple HTML files or you have a file that does not need any script, you of course can deviate from that rule.
+
+    **
+    By default webpack will bundle in "production" mode. That add extra optimizations. However, there
+    are other modes. For development, you can use 
+
+        const path = require("path");
+
+        module.exports = {
+            mode: "development", 
+            entry: "./src/app.js", 
+            output: {
+                filename: "app.js",
+                path: path.resolve(__dirname, "assets", "scripts")
+            }
+        }
+
+    Then, 
+        npm run build
+    
+    This produces unoptimized bundle. This is not readable, but is not optimized. 
+
+    But if we serve our page like this, it makes one request to the bundled app.js and it works.
+
+    ** However, the dynamically imported Tooltip.js won't be found. That has to be configured. 
+
+    *** Our web server serves the index.html, where the app.js file inside ./assets/scripts/ is imported
+    explicitly. However, when importing dynamically imported script, webpack looks for it on the 
+    index.html root level by default. Which is not present there. To tell webpack where it is, 
+    we have to tell in in webpack.config.js
+
+        module.exports = {
+            mode: "development", 
+            entry: "./src/app.js", 
+            output: {
+                filename: "app.js",
+                path: path.resolve(__dirname, "assets", "scripts"), 
+                publicPath: "./assets/scripts/"
+            }
+        }
+
+
+Auto Reloading Dev Server:
+
+        npm install --save-dev webpack-dev-server
+    
+    And set webpack config, 
+        module.exports = {
+            mode: "development", 
+            entry: "./src/app.js", 
+            output: {
+                filename: "app.js",
+                path: path.resolve(__dirname, "assets", "scripts"), 
+                publicPath: "./assets/scripts/" // where to look for dynamic imports
+            }, 
+            devServer: {
+                contentBase: "./"
+            }
+        }
+    
+    This tells webpack which directory web-server must serve from, which directory is the
+    root of the website. 
+
+    - To use that dev-server, we can tweak script in package.json. 
+
+    Add another scripts to run webpack-dev-server, 
+
+        "build:run": "webpack-dev-server"
+    
+    
+    NB: the key can be anything. It's just an alias for the terminal script. 
+
+    Then run, 
+        npm run build:dev
+    
+    As long as the server is running, it looks for changes in your entry file or any file associated with
+    your entry file. And will re run the server when you make change. 
+

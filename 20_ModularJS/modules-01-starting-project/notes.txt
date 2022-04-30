@@ -1,0 +1,225 @@
+Modular (Multi-File) Code
+
+Default is to have one class per file. 
+
+File might have multiple smaller functions, but it's one big thing per file. 
+
+- We create folders in script to have different secion of files. 
+- Then we create .js files for each major functionality, class. 
+
+Then we can import all the files separately in the index.html. 
+The order is important. Every flie needs to have what they need to work. 
+That means we have to micromanage all imports, and their order!
+
+This is not do-able for big projects. That's where JS modules step in. 
+
+Other programming languages has import feature that references other files. JS also has 
+something like that. 
+
+Modularizing JS:
+    - When separating code in files, the scopes will be limitted to files. Not available globally. 
+    - To tell JS, inside of a module we want a certain class to be available to other files 
+    as well. That is the - export keyword
+        export class Component {
+
+        }
+
+    - We have to at least import one script in index.html. That is our main app.js script. 
+    To that import we have to add attribute type="module". This tells the browser that the main 
+    script and all scripts referenced by the app.js script will use modules. 
+        <script src="assets/scripts/app.js" type="module" defer></script>
+
+    Modules are a relatively new feature. Since scripts can point at other scripts, we have to be
+    strict regarding security. We need to make sure that a script can't import a script from another page. 
+    Which might be malicious. 
+
+    * If you are using 3rd party libraries, those libraries might be compromised and might try to download files 
+    from other malicious pages. 
+
+    This is why we have a CROSS ORIGIN REQUEST policy. So Cross Origin Requests are not allowed. You are only 
+    allowed to download scripts from the same domain your page is running on. **
+
+    So far we have ben running our pages with file protocol. We clicked on the index.html and
+    the browser rendered the pages appropriately. But web server dependent features like using
+    Cross Origin Policy don't work there. This policy requires the page to be served from a real 
+    server in order to be validated, that scripts are only importing scripts from the same domain.
+
+    serve.js is a development server running in nodeJS. We'll use that to simulate a server. 
+
+    - export -ing is one part. It does make the component globally available just by doing that.  
+    - It just means that the class can now be imported. Not only classes can be exported, you can export functions 
+    vairables and constants etc. 
+    - To complete our modulazation, we need to import the exported component. 
+
+        import { Component } from "./Component"; // relative path
+
+    And before that we need to mark our <script> tag with attribute: type="module"
+    That will allow us to use module features: import export keywords without syntax errors. 
+
+    This way we don't have to worry about the importing order in the HTML file, because the importing is done
+    on chain, from the JS file. 
+
+    Have this in index.html:
+        <script src="assets/scripts/app.js" type="module" defer></script>
+
+    instead of this:
+        <script src="assets/scripts/Utility/DOMHelper.js" defer></script>
+        <script src="assets/scripts/App/Component.js" type="module"  defer></script>
+        <script src="assets/scripts/App/Tooltip.js" type="module" defer></script>
+        <script src="assets/scripts/App/ProjectItem.js" defer></script>
+        <script src="assets/scripts/App/ProjectList.js" defer></script>
+        <script src="assets/scripts/app.js" type="module" defer></script>
+
+    - Importing mutiple components:
+        import { moveElement, DOMHelper } from "./DOMHelper.js";
+
+    - Importing all
+        import * as DOMBundle from "./DOMHelper.js"
+
+    To access, 
+        DOMBundle.moveElement()
+
+    We bundled all EXPORTS from the DOMHelper.js file into one helper object. 
+
+    - as notation can also be used in general to assign aliases to imports. 
+        import { ProjectItem as PrjItem } from "./ProjectItem.js"
+
+    Use, 
+        new PrjItem(); 
+
+
+    If you have only one element exported from a file, you can name it the DEFAULT export of 
+    that file. 
+
+        export default class Component {
+
+        }
+
+    You could even remove the name if it's not important for this file!!
+
+        export default class {
+
+        }
+
+    This will be imported by default when importing from the file. 
+
+    You can STILL have named exports along that. 
+
+        export function doSomething() {}
+
+        export default class {
+
+        }
+
+    Then to import default, 
+        import Cmp, { doSomething } from "./Component.js"; // default and {namedImport} side by side
+
+    ** Notice, you don't wrap the import in curly braces. This tells JS that this should be the default
+    export of that file. This only works if the file has default exports. 
+    Disadvantage: every imported names the same thing differently. 
+
+    * YOU CAN HAVE ONLY ONE DEFAULT EXPORTS PER FILE. 
+
+What happens:
+    - The HTML file gets loaded. 
+    - There we request the css file and the app.js file. 
+    See the network tab in dev tools:
+    - First, the HTML file is loaded. (localhost)
+    - Then the css file
+    - Then app.js
+    - In app.js we import ProjectList, so next ProjectList.js...
+    ...
+
+    We're sending a lot of HTTP requests. For a small project this is not a problem. 
+    But for a large project this makes the load time large. 
+    Sending the request, getting the response and parsing the response always has a bit of dead 
+    time. Network latency, the browser getting started - it's time which you can't get rid off. 
+    The more request you send the more of that dead time you accumulate.
+    Therefore having hundreds of modules would not be a great idea. Cause you would send 
+    100s of HTTP requests.
+
+    This will be solved later, with a concept called bundling. 
+
+    Other improvements we can add is, some features are not always needed. 
+
+    Eg, unless we click the tooltip button, the tool tip file need not be loaded. In bigger
+    apps, these can add up. 
+
+    if you only load these files when you need them, it would speed up the initial page load. 
+
+
+    To load modules conditionally we can use and alternative import syntax. 
+    The import syntax we've used so far, is the STATIC IMPORT SYNTAX.   
+    It statically defines the dependencies of a file.
+
+    ***
+    As an alternative to that is the DYNAMIC IMPORT SYNTAX. 
+    When you know that some module will not be needed up to a point, you use this. 
+
+        import("./Tooltip.js")
+		.then(module => {
+			const tooltip = new module.Tooltip(
+				() => {
+					this.hasActiveTooltip = false;
+				},
+				tooltipText,
+				this.id
+			);
+			tooltip.attach();
+			this.hasActiveTooltip = true;
+		});
+
+    ** The import function is provided by the browser, which returns a promise. 
+    That resolves with the module object. That module object contains it's exports. 
+
+    When Mode Info (tooltip) is clicked, that import code is run, and the request is sent!
+
+    This can be a huge improvement for larger files. Makes the app snappy. 
+
+Module Script Code:
+    When there is code that runs in the file scope of the module, that code is executed upon 
+    import. It ONLY RUNS ON THE FIRST IMPORT FOR THE PAGE!!
+
+    Code in dynamically loaded modules run when the import is executed. ONLY FOR THE FIRST TIME!
+
+
+Module Scope:
+    The global object does not exist like normal. 
+
+    We have access to window object. That's important, because window is a global object.  
+
+    modules run on strict mode. So, 
+    console.log(this) does not print window, rather undefined. 
+
+    But, you can add properties to the window object, and have access to them in another file. 
+
+        window.DEFAULT_SOMETHIGN = 5;
+
+    This can be accessed from another module, 
+        window.DEFAULT_SOMETHIGN; 
+
+    But the access has to be after the setting is done. 
+    Like:   
+        import { ProjectList } from "./App/ProjectList.js"
+
+        window.DEFAULT_VALUE = "SALMAN"
+
+    Cannot be accessed from ProjectList.js global scope. 
+    ** Switching the order is not useful, because in JS, imports are automatically hoisted to the
+    top. 
+
+    However, it can be accessed from inner local scopes, which run after the import is 
+    completely done, and the script along with the assignment of window.DEFAULT_VALUE is done. 
+
+    But this is a hack solution. Do it only when you have to have a global data, and 
+    exporting and importing is not an option. 
+
+    Another global object is: globalThis
+    This points at some globally available object. This exists because nodeJS does not have
+    window object. This is available both in nodeJS and browser side JS. 
+
+    For browser side JS if you print globalThis, it prints the window object. 
+    So, globalThis in modules replaces "this" as your pointer at the window object. 
+
+    But you should use export import whenever possible. 
+

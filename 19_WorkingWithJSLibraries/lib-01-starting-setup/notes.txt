@@ -1,0 +1,81 @@
+The concept of third party library does not change from browser JS and nodeJS. 
+
+- To include a library we often find installation steps on the library page. 
+- Can download script or use a CDN. 
+
+- library.min.js is the optimized version of the library.js
+    - Function names are shortened
+    - White spaces are removed
+    We can optimize our own code. 
+
+Typically you want optimized script. Browser has less to download. 
+
+Adding a library:
+    In index.html you want to use another <script> import, before your script. 
+    ORDER is important. Import the library your script depends on before you import your script. 
+
+    After that use the library as instructed in the documentation. 
+
+CDN:
+    Most libraries support CDN. This allows you to include a link. So you don't need to download
+    the package and manually import it, but instead you have an enternally hosted file. 
+
+    This might be FASTER than your server, because these CDn servers are often faster. 
+
+There are plenty of libraries for nodeJS. 
+
+* There also are JS frameworks, which are VERY VERY large libraries. 
+Like, Vue.js, React.js or Angular.js
+
+Typically when you say library, you mean something smaller, which focusses on one code task. 
+And it is really good at that. 
+
+
+jQuery:
+    Very popular around 2010-12, still heavily used. But more important in the past. 
+    Because jQuery actually made working with the DOM, adding elements, querying elements way
+    easier. Now since then, JS has come a long way, and now a days its really easy to work with
+    the DOM, traverse the DOM, work with CSS classes there with native DOM API. Therefore you 
+    don't need jQuery alot these days, but you may find them in legacy code. 
+
+    It's a JS library you add to your project, like lodash.js. By downloading or using CDN. 
+
+    It gives you a lot of functions that help you work with the DOM.
+
+    it also makes sending HTTP requests a bit more easier. 
+
+
+How do I know which libraries exist?
+- There is no browsing site for JS libs. There is a collection site for knowing more about them
+https://www.npmjs.com
+
+- Do a google search, often you'll find github links. Go there, read the documentation. This
+is the best way. 
+
+
+Axios
+    Uses promises out of the box. 
+    axios.get(url): Returns a promise
+
+    - Unlike fetch API, it includes the data in the response object. Adn is promised based. 
+    - We don't need to parse the json, as it's automatically JS data. 
+
+    Errors are handled in axios, we automatically get a nice error message. Including 404s. 
+
+    axios.post(url, data);
+    axios analyzes the data body. If it's JSON or FormData it keeps as is. Otherwise it 
+    converts JS data JSON. 
+
+
+Considerations Of Using JS libs:
+    Importing a library includes a lot of functionalities that you'll never use. Users of our application
+    will download all that. 
+
+    But many libraries allow you to import them is a limited way. Such as lodash, which has a 
+    core build, that only includes most used features. More advanced project setups allow you 
+    to import just part of a library, and then stripping out the part you don't need. 
+
+    You want to ensure that the libraries you are using are secure and maintained. 
+    Look at the last commit on project github. Look at the number of stars to check it's
+    popularity. 
+    

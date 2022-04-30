@@ -143,18 +143,23 @@ EVENT LOOP:
     into the message queue. But the event loop sees we still have work to do, therefore it waits
     until the callstack empties. This is how the browser does it. 
 
-    My understanding so far: The browser runs the event loop. It hosts (and runs) the JS engine (runtime). 
-    The browser yields the JS engine occasionally to execute it's listening and other processes. 
-    So the JS engine and the browser tasks are rotated in the queue and it is manages by the browser. 
-    JS runtime has browser methods that tells the browsers to push certain tasks into the event loop
-    after some trigger the browser recognizes through it's event loop. HOWEVER, the browser recognizes 
-    that in it's event loop, but enqueues the callback as a part if the JS ENGINE. So the next
-    time the browser yields it's tasks, and finishes the other JS engine tasks, it runs the callback
-    as the JS engine's execution. So the initial script is completed and only then the initial
-    call stack is empty, and gets a chance to see further on the event queue. 
-    So if async is not used explicitly on the main initial loading script, that will execute in full before any 
-    tasks offloaded to the browser (async event loop) runs. Even if 0 delat time out is used. 
-    Using async explicitly may offer way to incorporate async code in inital script code. 
+    My understanding so far: 
+        The browser runs the event loop. It hosts (and runs) the JS engine (runtime). 
+        <added later>
+        JS is a single threaded execution, but the browser is NOT SINGLE THREADED. So the event listening part
+        is handled by the browser, in a multithreaded manner. When the event triggers, the callbacks must be executed
+        in the JS engine. Which is single threaded. That needs to be enqueued in the task queue. (there's also
+        micro-task queue, see documentation for promises in JS)
+        </added later>
+        JS runtime has browser methods that tells the browsers to push certain tasks into the event loop
+        after some trigger the browser recognizes through it's event loop. HOWEVER, the browser recognizes 
+        that in it's event loop, but enqueues the callback as a part if the JS ENGINE. So the next
+        time the browser yields it's tasks, and finishes the other JS engine tasks, it runs the callback
+        as the JS engine's execution. So the initial script is completed and only then the initial
+        call stack is empty, and gets a chance to see further on the event queue. 
+        So if async is not used explicitly on the main initial loading script, that will execute in full before any 
+        tasks offloaded to the browser (async event loop) runs. Even if 0 delat time out is used. 
+        Using async explicitly may offer way to incorporate async code in inital script code. 
 
 function trackUserHandler() {
 	navigator.geolocation.getCurrentPosition(

@@ -7,36 +7,38 @@ const fetchButton = document.querySelector("#available-posts button");
 const postList = document.querySelector("ul");
 
 function sendHttpRequest(method, url, data) {
-	const promise = new Promise((resolve, reject) => {
-		const xhr = new XMLHttpRequest();
-		xhr.open(method, url);
-
-		xhr.onload = function () {
-			if (xhr.status >= 200 && xhr.status < 300) {
-				resolve(xhr.response);
+	return fetch(url, {
+		method: method,
+		body: JSON.stringify(data),
+		headers: {
+			"Content-Type": "application/json", // tells the server, my request has json data.
+			rustin: "cohle",
+		},
+	})
+		.then((response) => {
+			if (response.status >= 200 && response.status < 300) {
+				return response.json();
 			} else {
-				reject(new Error("Something went wrong!")); // server sied errors
+				return response.json().then((errorData) => {
+					console.log(errorData);
+					throw new Error("Something went wrong server-side");
+				});
 			}
-		};
-
-		xhr.addEventListener("error", (event) => {
-			reject(new Error("Failed to send request!")); // client side errors.
+		})
+		.catch((error) => {
+			console.log(error); //  only network issues get here
+			throw new Error("Something went wrong!!");
 		});
-
-		xhr.send(JSON.stringify(data));
-	});
-
-	return promise;
 }
 
 async function fetchPosts() {
 	try {
 		const response = await sendHttpRequest(
 			"GET",
-			"https://jsonplaceholder.typicode.com/pos"
+			"https://jsonplaceholder.typicode.com/posts"
 		);
 
-		const listOfPosts = JSON.parse(response);
+		const listOfPosts = response;
 		for (const post of listOfPosts) {
 			const postElem = document.importNode(postTemplate.content, true);
 			postElem.querySelector("h2").textContent = post.title.toUpperCase();
@@ -61,6 +63,7 @@ async function createPost(title, content) {
 }
 
 fetchButton.addEventListener("click", fetchPosts);
+
 form.addEventListener("submit", (event) => {
 	event.preventDefault();
 
@@ -78,3 +81,15 @@ postList.addEventListener("click", (event) => {
 		sendHttpRequest("DELETE", url);
 	}
 });
+
+const promise = new Promise((resolve, reject) => {
+	console.log("executed inside promise");
+	resolve("passed in");
+}).then((message) => {
+	console.log(
+		"executed in the callback attached to the promise with: ",
+		message
+	);
+});
+
+console.log("exected on the current run if JS.");
