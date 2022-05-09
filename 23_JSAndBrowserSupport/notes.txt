@@ -1,0 +1,269 @@
+- What is "Browser Support" about?
+- Determining Required Support
+- Finding out which feature works where
+- Polyfills
+- Transpilation
+
+
+What is Browser support?
+    Consider the fetch() API. 
+
+    You want to use this:
+        - It's promise based
+        - Easier to use than xmlHttpRequest. 
+        - You might not want to used 3rd party lib like axios. 
+    
+    The problem you as a JS dev have when writing JS for the browser - you can't control which browser 
+    your users will use. 
+
+
+Browser features vs Javascript syntax
+    Browser features: Browser APIs
+        - The browser decides which features it offers
+        - Examples: fetch(), geolocation, DOM API, ...
+        All these objects and functions and methods are exposed by the browser in JS. They are not a part 
+        of the core JS language. Instead the browser provides a bridge to these functionalities, and exposes
+        APIs to JS so you can use them. 
+
+    Javascript syntax
+        - The browser's JS engine defines which JS syntax / version is supported. 
+        - let, const, async / await, Promises
+        JS engine and b4rowser dev teams are often the same, and often not. So they might not always
+        be the same. 
+
+    Why does this matter?
+        Browser features are implemented individually, one by one. There might be some new feature which is 
+        coming up - and the team behind Chrome decides that they want to implement it. They might offer 
+        this feature as a part of chrome. Other browsers might not offer it. Then you can only
+        use this feature in the chrome browser. Only users using the chrome browser can use this feature. 
+
+        For JS syntax, sometimes implemented individually, or sometimes in chunks. For examples, for JS
+        there is a specific version ES6, which brought a lot of changes. It introduced, let, const, arrow functions
+        etc. These features were implemented step by step in browsers, but they all worked towards that 
+        goal of supporting these features at some point. That's a difference. 
+
+        Safer to rely on JS syntax features to be available, than it is for browser APIs, especially if it's 
+        very new. 
+
+        Additionally with JS syntax, there is a way to write code in latest syntax and compile it down to 
+        older code that works on older browsers as well. 
+        * Fom DOM API that is not possible. If one browser gives you the functionality of getting the
+        user location, and another browser doesn't, there's no way to magically make it work in the browser
+        which does not offer that. 
+
+        Summary: Not all browsers support all features - and support changes all the time in modern ("evergreen")
+        browsers. Legacy browsers (eg, IE8) do not receive new features anymore. 
+
+
+Checking Features & Browser Support
+    1. MDN
+        Check feature article - browser support table at the bottom. 
+        Also often includes notes, fallbacks, workarounds (if support is missing)
+    2. https://caniuse.com
+        Search for feature name to get a detailed overview table (including browser market shares!)
+    3. Google
+    4. ES^ / JS Compat Table
+        For next-gen JS syntax features, check this overview table
+        Provides detailed feature split and also includes support of tranpilers. 
+
+
+Which Browser Support Do You Need?
+    Naive thought: Support ALL Browsers and ALL Browser version. 
+
+    DON'T DO THIS
+
+    Disadvantage:
+    Ship too much code, pass up on some features and improvements. 
+
+    - Analyze your market! Who will be your users?
+
+    For example
+        - Internal tool / app: Company browser might be clearly defined.
+        - Tech-savvy users: Very likely to use cutting-edge browsers & versions. 
+        - Older people, non-tech savvy audience: Likely to use older browsers
+    
+
+Using Feature Detection & Fallbacks
+        navigator.clipboard
+    Relatively modern API, that allows us to interact with the user's clipboard. 
+
+        if the feature is available ("not undefined"):
+            execute code and use feature
+        else:
+            execute fallback code, show error message
+    
+    We want to use navigator.clipboard.
+    ** If it's not supported, it gives us undefined. 
+
+    So check before using:
+        if (navigator.clipboard) {
+            // use feature
+        } else {
+            // fallback code
+        }
+
+
+Polyfills:
+    3rd party package that adds a ceratin feature that otherwise might be missing. 
+
+    Promises might not be available in all browsers. Therefore to still make it work - you can add such
+    a polyfill, which is 3rd party, that teaches the browser how to use that feature. 
+    Thhis does not work with all features. Some features require core mechanics, which can't be worked
+    around with JS. Some features can be replicated with other SJ features. Therefore an older browser 
+    that does not support promises, but supports other features with which you can rebuild the idea of
+    promises - might be able to utilize such a promise polyfill . 
+
+    How do you find such a polyfill?
+        Say you want to use fetch. Search "fetch" in https://caniuse.com, unedr "Resources" tab, you
+        would find link to a polyfill. 
+        Or, google it. 
+
+
+Using Traspilation:
+    For some features, you can't use feature detection, you can't use fallback code, you can't use 
+    polyfills, you can't ignore them. Typically that is the case for core JS syntax features, 
+    like: let, const, async / await. 
+
+    Unlike promises and fetch, these aren't function calls. They are keywords that tells the engine what 
+    the code after it is all about. This is not a functionality that can be built with other tools. 
+
+    To still deploy code that does work, use Transpilation. 
+
+    Transpilation: Convert modern code to older code. 
+
+    Third-party tools like Babel convert your code to code that works in older browsers as well. 
+    It can even be integrated to webpack workflow so it all happens in one step. 
+
+    - Write modern code, use cutting-edge features 
+    - Deploy cross-browser code
+    For example, coed that uses "var" instead of "const" and "let". That uses normal functions as opposed
+    to arrow functions. 
+
+    "Babel Loader" is the webpack integration module. 
+    Read docs. 
+
+        npm install -D babel-loader @babel/core @babel/preset-env
+
+    We can then tweak the webpack config to use them. 
+
+    - babel-loader connects Babel and webpack. 
+
+    - @babel/code is the core Babel tool. 
+
+    - @babel/preset-env controls which features are transpiled in which way. So this is the package with 
+    the concrete translation rules. 
+
+    Then add this to webpack config:
+        module: {
+            rules: [
+                {
+                test: /\.m?js$/,
+                exclude: /(node_modules|bower_components)/,
+                use: {
+                    loader: 'babel-loader',
+                    options: {
+                    presets: ['@babel/preset-env']
+                    }
+                }
+                }
+            ]
+        }
+
+    This adds a "module" entry, which gives webpack instructions how to transform your different modules. 
+    A module in webpack is just a file. It basically tells webpack what to do with the files it's managing. 
+
+    Then a rules "entry", that takes multiple rules - because you can control different types of files
+    with different types of loaders. A rule is a JS object where you have a "test" property. 
+
+    There you define you the file - how the file you want to translate should be identified. 
+    This is a Regex. 
+
+    "exclude" excludes 3rd party .js and .mjs from being transpiled. 
+    "use" takes the action on the modules. 
+    "loader" uses the tool on the files. 
+
+    You must decide which browsers you want to support - analyzing the market. We might not even have to 
+    transpile if IE11 or higher. 
+
+    * "@babel/preset-env": Tell it which browsers the transpilation should be file-tuned. 
+
+    "babel" takes this browser list from package.json. 
+    browserslist is a separate package and tool babel-preset-env uses under the hood. 
+    Read docs for which options you can set there. 
+
+        "browserslist": "> 2%" // meaning you want to output that works in browsers that have a market share of greater than 2%. 
+
+    * Then just npm run build will minimize and ready your JS with Babel running on the configured files. 
+
+    This transpiles JS old syntax features. But does not change the browser features, like Promises, 
+    fetch(). So this has to be mixed with feature detection, polyfills etc.
+
+    Feature detection + Transpilation + Polyfills for features we need.
+
+    For large projects, features that require polyfills - are cumbersome to find manually. 
+    The whole point of Babel is we need not worry about old JS syntax. 
+
+    Would be nice of the same could ahppen for polyfill. If babel sees a Promise it would be good if 
+    it could just include a Promise polyfill. 
+    - Babel can do this!
+
+        core-js
+    It's a package that is a collection of polyfills. 
+
+    You could import core js. And have access to all the JS features of the world in all browsers. 
+
+    The problem is - it imports all of the package. Which can make the import HUGE. 
+    This bloats our application just to make promises work. 
+
+    And so many other features that we aren't using. 
+
+    We can import what we need, going through the docs. 
+
+    But that also manually manages what we do, we want automatic polyfill. 
+
+    We can go to webpack config, and tell babel to use that polyfill. 
+
+        presets: [
+                    ["@babel/preset-env", {useBuiltIns: "entry"}]
+		]
+    
+    userBuiltIns tell Babel which polyfill to use. There are different modes. 
+    Deafult is: false
+
+    * "entry": You just need to add the generic import manually. Ther specific needs will be picked. 
+    Like import "core js". 
+
+    * "usage": Checks which features your coed is using, and then it adds the features automatically.
+
+    Why would you use entry instead of usage?
+        If you don't know what features you are going to use, and if your code is not the only code that 
+        should be taken into account. If you're using a bunch of 3rd party packages, they might be using 
+        features older browsers don't support. Babel does not check these packages. Then your 
+        "browsersList" in package.json is the best way to show which browsers you want to support, so that you are better safe than sorry and load all the polyfills these 3rd party packages might need. 
+
+
+What about NodeJS?
+    JS is a hosted language. It not just works with browsers, it also works with other runtimes. 
+    Like NodeJS. 
+
+    With other runtimes, you control which version of JS you use. Direct control over the condition your code will run. 
+
+
+Browser support outside of JS:
+    HTML features like type="module" might not be supported by all browsers. 
+
+    We are using webpack, so we just have to import one MINIMIZED script file. 
+    But if we are not using webpack, we should use modules, which might not be supported. 
+
+        <script nomodule>
+        </script>
+    
+    Can hold fallback code if browser does not support modules. 
+
+    **
+
+    Users might disable JS. That might mean your webapp will not work. In that situation you might want to show some message to your use. 
+
+        <noscript>
+            Please enable JavaScript to use this page. 
+        </noscript>

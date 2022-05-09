@@ -1,4 +1,5 @@
 const path = require("path");
+const CleanPlugin = require("clean-webpack-plugin");
 
 module.exports = {
     mode: "development", 
@@ -9,6 +10,10 @@ module.exports = {
         publicPath: "./assets/scripts/" // where to look for dynamic imports
     }, 
     devServer: {
-        contentBase: "./" // tells dev-server where your root html can be found. 
-    }
+        static: "./" // tells dev-server where your root html can be found. 
+    }, 
+    devtool: "eval-cheap-source-map", 
+    plugins: [
+        new CleanPlugin.CleanWebpackPlugin()
+    ]
 }

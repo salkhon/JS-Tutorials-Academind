@@ -1,0 +1,228 @@
+- We've seen sending HTTP requests to and from a server. You basically attach your UI to a backend server, 
+which then imght talk to a database. 
+
+- Some data can also be stored in the browser, directly where your USER is. 
+
+
+What is browser storage?
+    We have:        Browser     <->     Server
+                Local Stprage               Server-side Database
+                Cookies             
+                IndexedDB
+
+                Store temporary             Store essential & persistent data
+                "convenience"
+                data
+
+    - The important data, we want to store LOCKED AWAY from the users, is the backend server. 
+
+    - When we store something on the browser, we effectively store it on the machine of our user. 
+    This has 2 implications:
+        1. We as the application developer can't always tap into this data. Only when you're visiting
+        our page we can use the JS code to interact with the browser storage. So the data is not always 
+        available to us. 
+
+        2. It can't be shared with other users. 
+
+    Eg. If you're not running any analytics on the shopping cart data - that does not need sharing 
+    with other users, would be a candidate for browser storage. Also, authentication data, like
+    session ID. Such data is temporary data - CONVENIENCE data that might improve the user's experience. 
+
+    When we talk about browser sotrage, we have 3 major types:
+
+        1. localstorage, sessionStorage.
+        2. Cookies
+        3. IndexDB
+
+
+LocalStorage - SessionStorage :
+    - Simple key-value store. (like a JS object we save in a file.)
+    Eg, session ID, some analytics key you need to send to your analytics server. 
+    
+    - Manage user preference or basic user-data. 
+    - Can be cleared by the user and via JS
+
+    * Easy to user, quite versatile, bad for complex data. 
+
+Cookies:
+    - Simple key-value store. (Some config options)
+    - Manage user preferences or basic user-data
+    - Can be cleared by the user and via JS
+    ** (Along with manual clearance, cookies can have an expiry time with them, so that they automatically
+    get deleted.)
+
+    * A bit clunky to user, quite versatile, 
+        ** SENT TO SERVER ** (with outgoing HTTP requests, they are attached to HTTP request headers), 
+    bad for complex data
+
+IndexedDB:
+    - Relatively sophisticated, client-side database. 
+    - Manage complex data your web app needs
+    - Can be cleared by the user and via JS. 
+    (therefore cannot rely on)
+
+    * A bit clunky to user, great for complex (non-critical) data, good performance. 
+
+    Eg, google sheets. Rich client side applications. 
+    Where you build a DESKTOP LEVEL application in the browser. Where you might need to store a lot
+    of temporary or semi-temporary data in some storage on the browser, and you don't want to store that
+    in the browser for some reason. (may be you want to make sure that you're application works 
+    offline.)
+
+
+
+Local Storage:
+    Eg, might store userId. 
+    * However, this can be manipulated by the user. So you should never rely on it - it may serve as
+    a starting point. 
+
+    key: String
+    value: String. 
+
+    But JSON is a string. So complex data can be stored in JSON. 
+    Methods on JS objects will get deleted, because JSOn has no methods. 
+
+    You can't rely on the data. 
+
+    Localstorage is not cleared unless the user clears it manually. Or the browser clears it if it's
+    running out of space. 
+
+
+SessionStorage:
+    Lives as long as your page is open in the browser. 
+    Closing tabs, closing widow - clears the session storage. 
+
+
+Cookies:
+    Special storage, because they are attached to out going HTTP requests. 
+    Which can be helpful. Your server needs to be prepared to do something with the incoming cookie. 
+
+    Servers and clients can attach cookies. 
+
+        document.cookie
+    Gives all cookies. 
+
+    * Weird cookie behavior:
+
+        document.cookie = `uid=${userId}`
+
+    Adds to the cookie, DOES NOT REPLACE. Only replace the cookie with the same key. 
+
+    ** Under the hood this simply uses a setter function, which triggers when you assign a new 
+    value. 
+
+    ** COOKIES ARE ONLY AVAILABLE IF WEBPAGE IS SERVED FROM A SERVER. 
+
+    Read cookie
+        document.cookie
+
+    * HTTP ONLY flagged cookies are only accessible by the server, NOT accessible from browser side
+    JS. An extra security feature. 
+
+    Not a nice retrieval API like localstorage. 
+    * With cookies it's an all-or-nothing. Gets all key-val pairs separated by semi-colons ;
+
+        document.cookie.split(";");
+    There's an extra whitespace after ;
+
+    The advantages of cookies:
+        - You can set them to expire
+        - Can send them to the server with HTTP requests
+    
+    * You don't set any expiration on your cookie - it expires when session ends. 
+    * The user can delete cookies
+
+    Setting expire:
+        Add one of two flags:
+        1. max-age (takes time in seconds)
+            document.cookie = `uid=${userId}; max-age=50`;
+
+        2. expires (takes date)
+
+        
+        Here unit is in SECONDS. 
+
+
+Index DB:
+    In browser db. Works with file protocol as well. 
+
+    Business critical, security related info, as well data that has to be shared with other clients
+    should not be stored here. 
+    Just data can get lost, we just need to store to enhance the user experience. 
+
+    1. Create a database, or open a connection to an existing one. 
+        const dbRequest = window.indexedDB.open(DBNAME, DBVERSION)
+    DBVERSION can be used to update the database. 
+
+    If DBNAME and version is new, it creates a db, otherwise it opens the existing one. 
+    Async, but NOT promise based. 
+
+    2. Tables are called Object Stores. 
+        const dbRequest = indexedDB.open("StorageDummy", 1);
+
+    On creation:
+        dbRequest.addEventListener("upgradeneeded", (event) => {
+            /** @type {IDBDatabase} */
+            const db = event.target.result;
+            const objStore = db.createObjectStore("products", {
+                keyPath: "id",
+            }); // primary key
+
+            objStore.transaction.addEventListener("complete", (event) => {
+                const productStore = db
+                    .transaction("products", "readwrite")
+                    .objectStore("products");
+                productStore.add({
+                    id: "p1",
+                    title: "A first product",
+                    price: 12.99,
+                    tags: ["Expensive", "Luxurious"],
+                });
+            });
+        });
+
+    Complex data without JSON. 
+
+    On open:
+        dbRequest.addEventListener("success", (event) => {
+	        db = event.target.result;
+        });
+
+    Elsewhere:
+        
+        storeButton.addEventListener("click", () => {
+            if (!db) {
+                console.log("no db");
+                return;
+            }
+            const productStore = db
+                .transaction("products", "readwrite")
+                .objectStore("products");
+            productStore.add({
+                id: "p2",
+                title: "A second product",
+                price: 122.99,
+                tags: ["Expensive", "Luxurious"],
+            });
+        });
+
+        retrieveButton.addEventListener("click", () => {
+            if (!db) {
+                console.log("no db");
+                return;
+            }
+            const productStore = db
+                .transaction("products", "readwrite")
+                .objectStore("products");
+
+            const request = productStore.get("p2");
+            request.addEventListener("success", (event) => {
+                console.log(request.result);
+            });
+        });
+
+    
+    Inconvenient to use. There are 3rd party libs. 
+        IDB.js 
+    
+

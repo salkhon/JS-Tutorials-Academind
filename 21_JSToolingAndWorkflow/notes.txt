@@ -298,7 +298,7 @@ Auto Reloading Dev Server:
                 publicPath: "./assets/scripts/" // where to look for dynamic imports
             }, 
             devServer: {
-                contentBase: "./"
+                static: "./"
             }
         }
     
@@ -320,3 +320,152 @@ Auto Reloading Dev Server:
     As long as the server is running, it looks for changes in your entry file or any file associated with
     your entry file. And will re run the server when you make change. 
 
+
+Debug:
+    To have a better debugging view from the browser than the files opened in the Sources tab, 
+    we add "devtool" property to the webpack config object. Where you provide a string that tells
+    webpack the mode of the debuggin tool. Look on the docs for modes. 
+
+        module.exports = {
+            mode: "development", 
+            entry: "./src/app.js", 
+            output: {
+                filename: "app.js",
+                path: path.resolve(__dirname, "assets", "scripts"), 
+                publicPath: "./assets/scripts/"
+            }, 
+            devServer: {
+                static: "./"
+            }, 
+            devtool: "eval-cheap-source-map"
+        }
+
+    That way you'll get an relatively unmodified readable source. You can set breakpoints and debug at 
+    your own convenience. 
+
+
+Production:
+    In production, we want to output optimized code that we don't want to have such detail source mapping. 
+    We want to speed up the process, and make sure the output files are as small as possible. 
+
+    * We need a different config file for production. 
+    
+        webpack.config.prod.js
+
+    We set every thing as in development mode, webpack.config.js - with different "devtools" mode, and
+    "mode": "production". 
+
+    const path = require("path");
+
+    module.exports = {
+        mode: "production", 
+        entry: "./src/app.js", 
+        output: {
+            filename: "app.js", 
+            path: path.resolve(__dirname, "assets", "scripts"), 
+            publicPath: "./assets/scripts/"
+        }, 
+        devServer: {
+            static: "./"
+        }, 
+        devtool: "source-map"
+    }
+
+    ** But this is not the default config file webpack will look for. So to run webpack, we have to
+    point it to the config file we intend. 
+
+        webpack --config webpack.config.prod.js
+
+    Or, we add the script to package.json. 
+
+        "build:prod": "webpack --config webpack.config.prod.js"
+    
+
+    * So now we have 2 workflows. One with
+
+        npm run build:dev
+
+    Which runs the development server. 
+
+        npm run build:prod
+
+    Which is used when we have a ready version to push into the servers. 
+
+
+Improvements:
+    Assets folder Cleanup (output):
+        As we build with webpack, the number of scripts grow in the folder. Because the old files are
+        kept around, and new builds are added.
+        I would want to clear the scripts folder and add the newly built files. 
+
+        To do this, we have to install a new webpack plugin, 
+            npm install --save-dev clean-webpack-plugin
+        
+        This cleans the output path specified in webpack.config.js
+
+        Then add the "plugins" property on the config object. Plugins optimize the generated output. 
+
+            const path = require("path");
+            const CleanPlugin = require("clean-webpack-plugin");
+
+            module.exports = {
+                mode: "development", 
+                entry: "./src/app.js", 
+                output: {
+                    filename: "app.js", // this will be our bundled code
+                    path: path.resolve(__dirname, "assets", "scripts"), 
+                    publicPath: "./assets/scripts/" // where to look for dynamic imports
+                }, 
+                devServer: {
+                    static: "./" // tells dev-server where your root html can be found. 
+                }, 
+                devtool: "eval-cheap-source-map", 
+                plugins: [
+                    new CleanPlugin.CleanWebpackPlugin()
+                ]
+            }
+
+    Naming of output files:
+        ** If you deploy the files to a server, browsers will typically cache JS and CSS files. 
+        That is an improvement, you can control it from the server side, by setting the right headers
+        on your resources. (Which is a server-admin task)
+
+        You can force browsers to download a new version of the file by simply changing the filename. 
+        Then it's a new file for the browser and it will download it. 
+
+        For that we want to generate output fileanames automatically, and generate a new filename 
+        whenever we produce a new build.
+
+        This only matters for the production mode. So we go to webpack.config.prod.js, 
+
+        ** Instead of mentioning filename, we have to say:
+
+            filename: "[contenthash].js"
+
+        This is a keyword for webpack.  
+
+        ** we need to make sure in our index.html file, we update the base import. 
+
+
+Using Third Party Packages with npm & Webpack:
+    With our enhanced project setup, where we use npm to manage our development dependencies, and
+    webpack to bundle our code - now have a new way of adding 3rd party packages. 
+
+    We've seen how to add lodash using the basic CDN <script> import. We can do it using npm. 
+        npm install --save lodash
+    
+    NOT --save-dev, because we need this library in our production code, unlike eslint, webpack. 
+    This library then is added to node_modules. 
+
+    * This does not add the library to your project, it just adds it to the node_modules folder. 
+
+    * You have to import it in your script. 
+
+        import * as _ from "lodash"
+    
+    *** This not RELATIVE PATH. This import is for webpack, when it analyzes our input.  ***
+
+    If you have a package name, which does not start with .. or ./, webpack will look for a package
+    with this name on node_modules. 
+
+    
